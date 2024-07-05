@@ -1,28 +1,27 @@
 package daangn
 
 import (
+	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"net/http"
 )
 
-var baseURL string = "https://medium.com/daangn/development/home"
-var pageURL string = baseURL
+var baseURL = "https://medium.com/daangn/development/home"
+var pageURL = baseURL
 
-func Main() {
+func Main() []Post {
 
-	// 어케 totalPage 를 파악하지
-	// page 범위를 넘어가면 404 를 뱉는다.
-	for i := 1; i < 2; i++ {
-		pages := getPages(i)
-		log.Println(pages)
-	}
+	var result []Post
 
+	// single-page blog
+	pages := getPages()
+	result = append(result, pages...)
+	return result
 }
 
-func getPages(page int) []Post {
+func getPages() []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)
@@ -40,7 +39,7 @@ func getPages(page int) []Post {
 		summary := find.Find(".u-contentSansThin").Find(".u-fontSize18")
 		date := selection.Find("time")
 
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text()}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Daangn}
 		posts = append(posts, post)
 	})
 	return posts

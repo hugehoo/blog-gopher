@@ -1,28 +1,27 @@
 package toss
 
 import (
+	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"net/http"
 )
 
-var baseURL string = "https://toss.tech/tech"
-var pageURL string = baseURL
+var baseURL = "https://toss.tech/tech"
+var pageURL = baseURL
 
-func Main() {
+func Main() []Post {
 
-	// 어케 totalPage 를 파악하지
-	// page 범위를 넘어가면 404 를 뱉는다.
-	for i := 1; i < 2; i++ {
-		pages := getPages(i)
-		log.Println(pages)
-	}
+	var result []Post
 
+	// single-page blog
+	pages := getPages()
+	result = append(result, pages...)
+	return result
 }
 
-func getPages(page int) []Post {
+func getPages() []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)
@@ -35,14 +34,11 @@ func getPages(page int) []Post {
 	CheckErr(err)
 	doc.Find(".css-clywuu>li>a").Each(func(i int, selection *goquery.Selection) {
 		href, _ := selection.Attr("href")
-		title := selection.Find(".css-1e3wa1f").Find(".typography--h6")
-		summary := selection.Find(".css-1e3wa1f").Find(".typography--p")
-		date := selection.Find(".css-1e3wa1f").Find(".typography--small")
-		//title := selection.Find("._postInfo_1cl5f_99>strong")
-		//href, _ := selection.Attr("href")
-		//summary := selection.Find("p")
-		//date := selection.Find("time")
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text()}
+		innerDiv := selection.Find(".css-1e3wa1f")
+		title := innerDiv.Find(".typography--h6")
+		summary := innerDiv.Find(".typography--p")
+		date := innerDiv.Find(".typography--small")
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Toss}
 		posts = append(posts, post)
 	})
 	return posts

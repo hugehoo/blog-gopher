@@ -1,6 +1,7 @@
 package oliveyoung
 
 import (
+	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
@@ -9,14 +10,16 @@ import (
 	"strconv"
 )
 
-var baseURL string = "https://oliveyoung.tech"
-var pageURL string = baseURL + "/blog/page/"
+var baseURL = "https://oliveyoung.tech"
+var pageURL = baseURL + "/blog/page/"
 
-func Main() {
+func Main() []Post {
+	var result []Post
 	for i := 2; i < 3; i++ {
 		pages := getPages(i)
-		log.Println(pages)
+		result = append(result, pages...)
 	}
+	return result
 }
 
 func getPages(page int) []Post {
@@ -38,7 +41,7 @@ func getPages(page int) []Post {
 		title := div.Find(".PostList-module--title--a2e55")
 		date := div.Find(".PostList-module--date--21238")
 
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: date.Text()}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: date.Text(), Corp: company.Oliveyoung}
 		posts = append(posts, post)
 	})
 	return posts

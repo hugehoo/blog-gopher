@@ -1,26 +1,27 @@
 package kakaopay
 
 import (
+	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-var baseURL string = "https://tech.kakaopay.com"
-var pageURL string = baseURL + "/page/"
+var baseURL = "https://tech.kakaopay.com"
+var pageURL = baseURL + "/page/"
 
-func Main() {
+func Main() []Post {
 
 	// 어케 totalPage 를 파악하지
 	// page 범위를 넘어가면 404 를 뱉는다.
+	var result []Post
 	for i := 1; i < 2; i++ {
 		pages := getPages(i)
-		log.Println(pages)
+		result = append(result, pages...)
 	}
-
+	return result
 }
 
 func getPages(page int) []Post {
@@ -41,7 +42,7 @@ func getPages(page int) []Post {
 		summary := selection.Find("p")
 		date := selection.Find("time")
 
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text()}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Kakaopay}
 		posts = append(posts, post)
 
 	})
