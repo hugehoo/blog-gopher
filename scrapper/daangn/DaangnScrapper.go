@@ -11,7 +11,7 @@ import (
 var baseURL = "https://medium.com/daangn/development/home"
 var pageURL = baseURL
 
-func Main() []Post {
+func CallApi() []Post {
 
 	var result []Post
 

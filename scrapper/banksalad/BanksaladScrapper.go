@@ -12,7 +12,7 @@ import (
 var baseURL = "https://blog.banksalad.com"
 var pageURL = baseURL + "/tech/page/"
 
-func Main() []Post {
+func CallApi() []Post {
 
 	var result []Post
 

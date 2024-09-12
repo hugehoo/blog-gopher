@@ -5,7 +5,6 @@ import (
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -13,7 +12,7 @@ import (
 var baseURL = "https://oliveyoung.tech"
 var pageURL = baseURL + "/blog/page/"
 
-func Main() []Post {
+func CallApi() []Post {
 	var result []Post
 	for i := 2; i < 3; i++ {
 		pages := getPages(i)
@@ -27,7 +26,6 @@ func getPages(page int) []Post {
 	var posts []Post
 	url := pageURL + strconv.Itoa(page)
 	res, err := http.Get(url)
-	log.Println(url)
 	CheckErr(err)
 	CheckCode(res)
 	defer res.Body.Close()

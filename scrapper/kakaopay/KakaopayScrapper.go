@@ -12,12 +12,12 @@ import (
 var baseURL = "https://tech.kakaopay.com"
 var pageURL = baseURL + "/page/"
 
-func Main() []Post {
+func CallApi() []Post {
 
 	// 어케 totalPage 를 파악하지
 	// page 범위를 넘어가면 404 를 뱉는다.
 	var result []Post
-	for i := 1; i < 2; i++ {
+	for i := 1; i < 20; i++ {
 		pages := getPages(i)
 		result = append(result, pages...)
 	}

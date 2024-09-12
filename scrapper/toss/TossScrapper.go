@@ -11,7 +11,7 @@ import (
 var baseURL = "https://toss.tech/tech"
 var pageURL = baseURL
 
-func Main() []Post {
+func CallApi() []Post {
 
 	var result []Post
 
