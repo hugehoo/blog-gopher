@@ -8,7 +8,7 @@
 
 ### Todo 
 - [X] goroutine
-- [] Date Parsing
+- [ ] Date Parsing
 - scheduler per day 
 - [X] repository
 - [X] web framework
