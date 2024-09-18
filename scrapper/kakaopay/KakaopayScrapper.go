@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 )
 
 var baseURL = "https://tech.kakaopay.com"
@@ -61,8 +62,8 @@ func getPages(page int) []Post {
 		href, _ := selection.Attr("href")
 		summary := selection.Find("p")
 		date := selection.Find("time")
-
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.KAKAOPAY}
+		parsedDate, _ := time.Parse("2006. 1. 2", date.Text())
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: parsedDate.String(), Corp: company.KAKAOPAY}
 		posts = append(posts, post)
 
 	})

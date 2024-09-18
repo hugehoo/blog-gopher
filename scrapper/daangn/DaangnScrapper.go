@@ -6,6 +6,8 @@ import (
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 var baseURL = "https://medium.com/daangn/development/home"
@@ -21,6 +23,9 @@ func CallApi() []Post {
 	return result
 }
 
+/*
+* 당근 - 미디엄은 해당 연도에 발행된 글은 year 를 생략해서 표현함. 올해 이전에 발행된 글엔 year 를 붙인다.
+ */
 func getPages() []Post {
 
 	var posts []Post
@@ -38,9 +43,22 @@ func getPages() []Post {
 		title := find.Find("h3").Find(".u-letterSpacingTight")
 		summary := find.Find(".u-contentSansThin").Find(".u-fontSize18")
 		date := selection.Find("time")
-
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.DANNGN}
-		posts = append(posts, post)
+		if title.Text() != "" {
+			date, _ := time.Parse("Jan 2, 2006", processYear(date)) // 문자열을 날짜로 파싱
+			post := Post{Title: title.Text(), Url: href, Summary: summary.Text(), Date: date.String(), Corp: company.DANNGN}
+			posts = append(posts, post)
+		}
 	})
 	return posts
+}
+
+func processYear(date *goquery.Selection) string {
+	var temp string
+	if len(date.Text()) < 8 {
+		year := time.Now().Year()
+		temp = date.Text() + ", " + strconv.Itoa(year)
+	} else {
+		temp = date.Text()
+	}
+	return temp
 }

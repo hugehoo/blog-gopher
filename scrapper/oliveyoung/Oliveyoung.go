@@ -7,6 +7,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 var baseURL = "https://oliveyoung.tech"
@@ -38,8 +39,8 @@ func getPages(page int) []Post {
 		div := selection.Find(".PostList-module--content--de4e3")
 		title := div.Find(".PostList-module--title--a2e55")
 		date := div.Find(".PostList-module--date--21238")
-
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: date.Text(), Corp: company.OLIVE}
+		parsedDate, _ := time.Parse("2006-01-02", date.Text())
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: parsedDate.String(), Corp: company.OLIVE}
 		posts = append(posts, post)
 	})
 	return posts

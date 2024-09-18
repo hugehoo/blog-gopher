@@ -6,9 +6,12 @@ import (
 	. "blog-gopher/common/types"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
+	"strings"
+	"time"
 )
 
 var baseURL = "https://toss.tech/tech"
+var postURL = "https://toss.tech"
 var pageURL = baseURL
 
 func CallApi() []Post {
@@ -37,9 +40,13 @@ func getPages() []Post {
 		innerDiv := selection.Find(".css-1e3wa1f")
 		title := innerDiv.Find(".typography--h6")
 		summary := innerDiv.Find(".typography--p")
-		date := innerDiv.Find(".typography--small")
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.TOSS}
-		posts = append(posts, post)
+		originalDateString := innerDiv.Find(".typography--small").Text()
+		if len(title.Text()) != 0 {
+			split := strings.Split(originalDateString, "·")
+			date, _ := time.Parse("2006년 1월 2일", strings.TrimSpace(split[0])) // 문자열을 날짜로 파싱
+			post := Post{Title: title.Text(), Url: postURL + href, Summary: summary.Text(), Date: date.String(), Corp: company.TOSS}
+			posts = append(posts, post)
+		}
 	})
 	return posts
 }
