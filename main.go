@@ -71,14 +71,44 @@ import (
 //}
 
 func main() {
-	start := time.Now() // 시작 시간
+	start := time.Now()
 	var result []Post
 	result = callGoroutineChannel(result)
-	result = callGoroutine(result)
-	result = callSynchronous(result)
 	log.Println("Total :", len(result))
-	elapsed := time.Since(start) // 경과 시간
-	log.Printf("[Goroutine] Execution Time: %s\n", elapsed)
+	elapsed := time.Since(start)
+	log.Printf("[Goroutine w Channel] Execution Time: %s\n", elapsed)
+}
+
+func callGoroutineChannel(result []Post) []Post {
+	scrapers := []func() []Post{
+		kakaopay.CallApi,
+		oliveyoung.CallApi,
+		daangn.CallApi,
+		toss.CallApi,
+		banksalad.CallApi,
+	}
+	resultChan := make(chan []Post, len(scrapers))
+
+	var wg sync.WaitGroup
+	for _, scraper := range scrapers {
+		wg.Add(1)
+		go func(scrapeFunc func() []Post) {
+			defer wg.Done()
+			resultChan <- scrapeFunc()
+		}(scraper)
+	}
+
+	// 결과 수집을 위한 고루틴
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	for posts := range resultChan {
+		result = append(result, posts...)
+	}
+
+	return result
 }
 
 func callGoroutine(result []Post) []Post {
@@ -110,39 +140,6 @@ func callGoroutine(result []Post) []Post {
 	}
 	// 모든 goroutine이 완료될 때까지 대기
 	wg.Wait()
-	return result
-}
-
-func callGoroutineChannel(result []Post) []Post {
-	scrapers := []func() []Post{
-		kakaopay.CallApi,
-		oliveyoung.CallApi,
-		daangn.CallApi,
-		toss.CallApi,
-		banksalad.CallApi,
-	}
-
-	resultChan := make(chan []Post, len(scrapers))
-
-	var wg sync.WaitGroup
-	for _, scraper := range scrapers {
-		wg.Add(1)
-		go func(scrapeFunc func() []Post) {
-			defer wg.Done()
-			resultChan <- scrapeFunc()
-		}(scraper)
-	}
-
-	// 결과 수집을 위한 고루틴
-	go func() {
-		wg.Wait()
-		close(resultChan)
-	}()
-
-	for posts := range resultChan {
-		result = append(result, posts...)
-	}
-
 	return result
 }
 

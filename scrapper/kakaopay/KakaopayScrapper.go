@@ -7,6 +7,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 var baseURL = "https://tech.kakaopay.com"
@@ -16,9 +17,28 @@ func CallApi() []Post {
 
 	// 어케 totalPage 를 파악하지
 	// page 범위를 넘어가면 404 를 뱉는다.
+
+	resultChan := make(chan []Post)
+	var wg sync.WaitGroup
+
+	maxPages := 20
+	for i := 1; i < maxPages; i++ {
+		wg.Add(1)
+		go func(page int) {
+			defer wg.Done()
+			pages := getPages(page)
+			if len(pages) > 0 {
+				resultChan <- pages
+			}
+		}(i)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
 	var result []Post
-	for i := 1; i < 20; i++ {
-		pages := getPages(i)
+	for pages := range resultChan {
 		result = append(result, pages...)
 	}
 	return result
