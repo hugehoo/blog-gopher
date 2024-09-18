@@ -39,7 +39,7 @@ func getPages(page int) []Post {
 		title := div.Find(".PostList-module--title--a2e55")
 		date := div.Find(".PostList-module--date--21238")
 
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: date.Text(), Corp: company.Oliveyoung}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: date.Text(), Corp: company.OLIVE}
 		posts = append(posts, post)
 	})
 	return posts

@@ -40,7 +40,7 @@ func getPages(page int) []Post {
 		href, _ := title.Find("a").Attr("href")
 		summary := selection.Find(".postCardMinimalstyle__Excerpt-sc-12sv3cr-6")
 		date := selection.Find(".postCardMinimalstyle__PostDate-sc-12sv3cr-3")
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Banksalad}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.BANKSALAD}
 		posts = append(posts, post)
 	})
 	return posts

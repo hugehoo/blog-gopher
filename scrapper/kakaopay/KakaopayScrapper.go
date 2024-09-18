@@ -62,7 +62,7 @@ func getPages(page int) []Post {
 		summary := selection.Find("p")
 		date := selection.Find("time")
 
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Kakaopay}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.KAKAOPAY}
 		posts = append(posts, post)
 
 	})

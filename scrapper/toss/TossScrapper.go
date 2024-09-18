@@ -38,7 +38,7 @@ func getPages() []Post {
 		title := innerDiv.Find(".typography--h6")
 		summary := innerDiv.Find(".typography--p")
 		date := innerDiv.Find(".typography--small")
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Toss}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.TOSS}
 		posts = append(posts, post)
 	})
 	return posts

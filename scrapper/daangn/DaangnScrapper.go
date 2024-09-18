@@ -39,7 +39,7 @@ func getPages() []Post {
 		summary := find.Find(".u-contentSansThin").Find(".u-fontSize18")
 		date := selection.Find("time")
 
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.Daangn}
+		post := Post{Title: title.Text(), Url: baseURL + href, Summary: summary.Text(), Date: date.Text(), Corp: company.DANNGN}
 		posts = append(posts, post)
 	})
 	return posts
