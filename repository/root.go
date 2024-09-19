@@ -19,6 +19,17 @@ type Repository struct {
 func NewRepository(c *config.Config) (*Repository, error) {
 	client := config.ConnectMongoDB(c.Mongo.Url)
 	collection := config.GetCollection("test", "blog_posts")
+
+	//_, err := collection.Indexes().CreateOne(
+	//	context.TODO(),
+	//	mongo.IndexModel{
+	//		Keys: bson.M{"title": "text"},
+	//	},
+	//)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
 	return &Repository{mongo: client, collection: collection},
 		nil
 }
@@ -72,4 +83,38 @@ func (r *Repository) FindBlogs(corps []string, page int, pageSize int) []types.P
 		return results
 	}
 
+}
+
+func (r *Repository) DeleteAll() {
+	//r.collection.Drop()
+
+}
+
+func (r *Repository) SearchBlogs(searchWord string, page int, size int) []types.Post {
+
+	//filter := bson.M{
+	//	"$text": bson.M{
+	//		"$search": searchWord,
+	//	},
+	//}
+
+	// title 필드에서 검색하는 쿼리 생성 - 정규 표현식 사용
+	filter := bson.M{
+		"title": bson.M{
+			"$regex":   searchWord,
+			"$options": "i", // 대소문자 구분 없음
+		},
+	}
+	cursor, err := r.collection.Find(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(context.TODO())
+
+	var results []types.Post
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	return results
 }

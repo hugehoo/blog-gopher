@@ -3,7 +3,6 @@ package service
 import (
 	. "blog-gopher/common/types"
 	"blog-gopher/repository"
-	"blog-gopher/scrapper/banksalad"
 	"blog-gopher/scrapper/daangn"
 	"blog-gopher/scrapper/kakaopay"
 	"blog-gopher/scrapper/oliveyoung"
@@ -27,7 +26,10 @@ func (s Service) UpdateAllPosts() {
 	var result []Post
 	result = CallGoroutineChannel(result)
 	s.repo.InsertBlogs(result)
+}
 
+func (s *Service) SearchPosts(value string, page int, size int) []Post {
+	return s.repo.SearchBlogs(value, page, size)
 }
 
 func CallGoroutineChannel(result []Post) []Post {
@@ -36,7 +38,7 @@ func CallGoroutineChannel(result []Post) []Post {
 		oliveyoung.CallApi,
 		daangn.CallApi,
 		toss.CallApi,
-		banksalad.CallApi,
+		//banksalad.CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 
