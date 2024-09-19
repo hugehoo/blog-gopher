@@ -5,6 +5,7 @@ import (
 )
 
 type Post struct {
+	ID      string `bson:"_id,omitempty"`
 	Title   string
 	Url     string
 	Summary string
