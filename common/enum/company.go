@@ -7,5 +7,5 @@ const (
 	OLIVE     Company = "OLIVE"
 	BANKSALAD Company = "BANKSALAD"
 	TOSS      Company = "TOSS"
-	DANNGN    Company = "DANNGN"
+	DAANGN    Company = "DAANGN"
 )

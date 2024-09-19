@@ -45,7 +45,7 @@ func getPages() []Post {
 		date := selection.Find("time")
 		if title.Text() != "" {
 			date, _ := time.Parse("Jan 2, 2006", processYear(date)) // 문자열을 날짜로 파싱
-			post := Post{Title: title.Text(), Url: href, Summary: summary.Text(), Date: date.String(), Corp: company.DANNGN}
+			post := Post{Title: title.Text(), Url: href, Summary: summary.Text(), Date: date.String(), Corp: company.DAANGN}
 			posts = append(posts, post)
 		}
 	})
