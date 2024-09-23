@@ -8,4 +8,7 @@ const (
 	BANKSALAD Company = "BANKSALAD"
 	TOSS      Company = "TOSS"
 	DAANGN    Company = "DAANGN"
+	MUSINSA   Company = "MUSINSA"
+	TWONINE   Company = "29CM"
+	BUZZVIL   Company = "BUZZVIL"
 )
