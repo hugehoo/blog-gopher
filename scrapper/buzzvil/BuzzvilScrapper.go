@@ -85,7 +85,7 @@ func getDate(selection *goquery.Selection) time.Time {
 	val := selection.Find("ul.card-meta span")
 	val.Each(func(i int, selection *goquery.Selection) {
 		length := val.Length()
-		if i == length-1 {
+		if i == length-1 { // author 가 여럿인 경우가 있어 날짜의 순서가 고정되지 않기 때문에 i 값으로 하드코딩하여 분기하는건 X
 			date := selection.Text()
 			parsedDate, _ = time.Parse("2 Jan, 2006", date)
 		}
