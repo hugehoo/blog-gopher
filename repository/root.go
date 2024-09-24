@@ -19,17 +19,6 @@ type Repository struct {
 func NewRepository(c *config.Config) (*Repository, error) {
 	client := config.ConnectMongoDB(c.Mongo.Url)
 	collection := config.GetCollection("test", "blog_posts")
-
-	//_, err := collection.Indexes().CreateOne(
-	//	context.TODO(),
-	//	mongo.IndexModel{
-	//		Keys: bson.M{"title": "text"},
-	//	},
-	//)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
 	return &Repository{mongo: client, collection: collection},
 		nil
 }
@@ -56,9 +45,10 @@ func (r *Repository) InsertBlogs(posts []types.Post) {
 func (r *Repository) FindBlogs(corps []string, page int, pageSize int) []types.Post {
 	// 데이터 정렬 및 페이징
 	options := options.Find().
-		SetSort(bson.D{{"date", -1}}).         // 날짜를 기준으로 내림차순 정렬
-		SetSkip(int64((page - 1) * pageSize)). // 페이지 건너뛰기
-		SetLimit(int64(pageSize))              // 페이지 크기 설정
+		SetSort(bson.D{{"date", -1}})
+	//.         // 날짜를 기준으로 내림차순 정렬
+	//	SetSkip(int64((page - 1) * pageSize)). // 페이지 건너뛰기
+	//	SetLimit(int64(pageSize))              // 페이지 크기 설정
 
 	var filter bson.M
 	if len(corps) > 0 { // corps 배열에 값이 있을 때만 $in 필터 적용

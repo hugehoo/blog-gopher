@@ -7,8 +7,10 @@ import (
 
 type Config struct {
 	Mongo struct {
-		DB  string
-		Url string
+		DB       string
+		Url      string
+		User     string
+		PASSWORD string
 	}
 }
 

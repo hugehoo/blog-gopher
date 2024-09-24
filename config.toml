@@ -1,4 +1,0 @@
-[mongo]
-DB = "test"
-URL = "mongodb://localhost:27017"
-
