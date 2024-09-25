@@ -3,10 +3,12 @@ package main
 import (
 	"blog-gopher/common/dto"
 	"blog-gopher/common/types"
-	"blog-gopher/config"
 	"blog-gopher/repository"
 	"blog-gopher/service"
-	"flag"
+	"context"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -16,28 +18,35 @@ import (
 	"time"
 )
 
-var pathFlag = flag.String("config", "./config.toml", "config set up")
+var ginLambda *ginadapter.GinLambda
 
-func main() {
-	flag.Parse()
-	c := config.NewConfig(*pathFlag)
+func init() {
+	log.Println("✅ Starting initialization...")
+	gin.SetMode(gin.ReleaseMode)
+
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+
+	//
 	var s *service.Service
-	if repository, err := repository.NewRepository(c); err != nil {
+	if repository, err := repository.NewRepository(); err != nil {
 		panic(err)
 	} else {
 		s = service.NewService(repository)
 	}
 
-	r := gin.Default()
-	// CORS 미들웨어 설정
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // React 앱의 주소
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"} // Allow all origins
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	config.ExposeHeaders = []string{"Content-Length"}
+	config.AllowCredentials = true
+	config.MaxAge = 12 * time.Hour
+	r.Use(cors.New(config))
 
 	r.GET("/posts", func(c *gin.Context) {
 		posts := getPosts(c, s)
@@ -48,10 +57,63 @@ func main() {
 		c.JSON(http.StatusOK, searchPosts(c, s))
 	})
 
-	r.POST("/", func(c *gin.Context) {
-		s.UpdateAllPosts()
-	})
-	r.Run()
+	ginLambda = ginadapter.New(r)
+	log.Println("✅ Initialization complete")
+}
+
+//func init() {
+//	// gin 라우터 설정
+//	r := gin.Default()
+//	r.GET("/ping", func(c *gin.Context) {
+//		c.JSON(200, gin.H{
+//			"message": "pong",
+//		})
+//	})
+//
+//	// 다른 라우트들을 여기에 추가...
+//	flag.Parse()
+//	//c := config.NewConfig()
+//	var s *service.Service
+//	if repository, err := repository.NewRepository(); err != nil {
+//		panic(err)
+//	} else {
+//		s = service.NewService(repository)
+//	}
+//
+//	// CORS 미들웨어 설정
+//	r.Use(cors.New(cors.Config{
+//		//AllowOrigins:     []string{"http://localhost:3000"}, // React 앱의 주소
+//		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+//		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+//		ExposeHeaders:    []string{"Content-Length"},
+//		AllowCredentials: true,
+//		MaxAge:           12 * time.Hour,
+//	}))
+//
+//	r.GET("/posts", func(c *gin.Context) {
+//		posts := getPosts(c, s)
+//		c.JSON(http.StatusOK, posts)
+//	})
+//
+//	r.GET("/search", func(c *gin.Context) {
+//		c.JSON(http.StatusOK, searchPosts(c, s))
+//	})
+//
+//	r.POST("/", func(c *gin.Context) {
+//		s.UpdateAllPosts()
+//	})
+//
+//	// gin 어댑터 생성
+//	ginLambda = ginadapter.New(r)
+//}
+
+func main() {
+	log.Println("📌 Start Lambda")
+	lambda.Start(Handler)
+}
+func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	log.Printf("Handling request: %s %s", request.HTTPMethod, request.Path)
+	return ginLambda.ProxyWithContext(ctx, request)
 }
 
 func searchPosts(c *gin.Context, s *service.Service) []dto.PostDTO {
