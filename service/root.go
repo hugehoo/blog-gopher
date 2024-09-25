@@ -3,10 +3,13 @@ package service
 import (
 	. "blog-gopher/common/types"
 	"blog-gopher/repository"
+	"blog-gopher/scrapper/buzzvil"
 	"blog-gopher/scrapper/daangn"
 	"blog-gopher/scrapper/kakaopay"
+	"blog-gopher/scrapper/musinsa"
 	"blog-gopher/scrapper/oliveyoung"
 	"blog-gopher/scrapper/toss"
+	"blog-gopher/scrapper/twonine"
 	"sync"
 )
 
@@ -38,7 +41,9 @@ func CallGoroutineChannel(result []Post) []Post {
 		oliveyoung.CallApi,
 		daangn.CallApi,
 		toss.CallApi,
-		//banksalad.CallApi,
+		musinsa.CallApi,
+		twonine.CallApi,
+		buzzvil.CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 
