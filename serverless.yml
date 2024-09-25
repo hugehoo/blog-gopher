@@ -1,0 +1,28 @@
+service: serverless-go
+
+provider:
+  name: aws
+  runtime: provided.al2
+  region: ap-northeast-2
+  stage: ${opt:stage, 'dev'}
+
+functions:
+  api:
+    handler: bootstrap
+    timeout: 30 # Increase overall function timeout
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+    environment:
+      GO_LOG: info
+
+
+package:
+  patterns:
+    - '!./**'
+    - './bootstrap'
+
+custom:
+  golang:
+    cmd: GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
