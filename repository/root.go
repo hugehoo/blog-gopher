@@ -16,9 +16,9 @@ type Repository struct {
 	collection *mongo.Collection
 }
 
-func NewRepository(c *config.Config) (*Repository, error) {
-	client := config.ConnectMongoDB(c.Mongo.Url)
-	collection := config.GetCollection("test", "blog_posts")
+func NewRepository() (*Repository, error) {
+	client := config.ConnectMongoDB(config.MongoUri)
+	collection := config.GetCollection(config.DB, config.COLLECTION)
 	return &Repository{mongo: client, collection: collection},
 		nil
 }
