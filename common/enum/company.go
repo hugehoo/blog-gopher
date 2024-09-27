@@ -11,4 +11,5 @@ const (
 	MUSINSA   Company = "MUSINSA"
 	TWONINE   Company = "29CM"
 	BUZZVIL   Company = "BUZZVIL"
+	KURLY     Company = "KURLY"
 )
