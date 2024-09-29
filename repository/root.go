@@ -35,6 +35,9 @@ func (r *Repository) InsertBlogs(posts []types.Post) {
 		}
 		documents = append(documents, doc)
 	}
+	if len(posts) == 0 {
+		return
+	}
 
 	if _, err := r.collection.InsertMany(context.TODO(), documents); err != nil {
 		log.Println("Insert fail", err)
