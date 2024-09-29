@@ -3,9 +3,14 @@ package service
 import (
 	. "blog-gopher/common/types"
 	"blog-gopher/repository"
+	"blog-gopher/scrapper/bucketplace"
 	"blog-gopher/scrapper/buzzvil"
 	"blog-gopher/scrapper/daangn"
+	"blog-gopher/scrapper/devsisters"
+	"blog-gopher/scrapper/kakaobank"
 	"blog-gopher/scrapper/kakaopay"
+	"blog-gopher/scrapper/kurly"
+	"blog-gopher/scrapper/line"
 	"blog-gopher/scrapper/musinsa"
 	"blog-gopher/scrapper/oliveyoung"
 	"blog-gopher/scrapper/toss"
@@ -38,12 +43,17 @@ func (s *Service) SearchPosts(value string, page int, size int) []Post {
 func CallGoroutineChannel(result []Post) []Post {
 	scrapers := []func() []Post{
 		kakaopay.CallApi,
+		kakaobank.CallApi,
 		oliveyoung.CallApi,
 		daangn.CallApi,
 		toss.CallApi,
 		musinsa.CallApi,
 		twonine.CallApi,
 		buzzvil.CallApi,
+		kurly.CallApi,
+		devsisters.CallApi,
+		bucketplace.CallApi,
+		line.CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 
