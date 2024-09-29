@@ -10,12 +10,11 @@ import (
 	"time"
 )
 
-var baseURL = "https://oliveyoung.tech"
-var pageURL = baseURL + "/blog/page/"
+const baseURL = "https://oliveyoung.tech/blog"
 
 func CallApi() []Post {
 	var result []Post
-	for i := 2; i < 3; i++ {
+	for i := 1; i < 11; i++ {
 		pages := getPages(i)
 		result = append(result, pages...)
 	}
@@ -23,9 +22,13 @@ func CallApi() []Post {
 }
 
 func getPages(page int) []Post {
-
 	var posts []Post
-	url := pageURL + strconv.Itoa(page)
+	var url string
+	if page == 1 {
+		url = baseURL
+	} else {
+		url = baseURL + "/page/" + strconv.Itoa(page)
+	}
 	res, err := http.Get(url)
 	CheckErr(err)
 	CheckCode(res)
@@ -35,12 +38,11 @@ func getPages(page int) []Post {
 	CheckErr(err)
 	doc.Find(".PostList-module--item--95839>a").Each(func(i int, selection *goquery.Selection) {
 		href, _ := selection.Attr("href")
-
 		div := selection.Find(".PostList-module--content--de4e3")
 		title := div.Find(".PostList-module--title--a2e55")
 		date := div.Find(".PostList-module--date--21238")
 		parsedDate, _ := time.Parse("2006-01-02", date.Text())
-		post := Post{Title: title.Text(), Url: baseURL + href, Summary: "", Date: parsedDate.String(), Corp: company.OLIVE}
+		post := Post{Title: title.Text(), Url: "https://oliveyoung.tech/" + href, Summary: "", Date: parsedDate.String(), Corp: company.OLIVE}
 		posts = append(posts, post)
 	})
 	return posts
