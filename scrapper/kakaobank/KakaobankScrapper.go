@@ -4,8 +4,11 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
+	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -13,6 +16,7 @@ import (
 
 var baseURL = "https://tech.kakaobank.com"
 var pageURL = baseURL + "/page/"
+var parsedURL, _ = url.Parse(baseURL)
 
 func CallApi() []Post {
 	var result []Post
@@ -44,8 +48,23 @@ func getPages(page int) []Post {
 		summary := selection.Find(".post-summary")
 		href, _ := selection.Find(".post-title>a").Attr("href")
 		parsedDate, _ := time.Parse("2006-01-02", strings.TrimSpace(date.Text()))
-		post := Post{Title: strings.TrimSpace(title), Url: baseURL + strings.TrimSpace(href), Summary: summary.Text(), Date: parsedDate.String(), Corp: company.KAKAOBANK}
+		post := Post{Title: strings.TrimSpace(title), Url: processUrl(href), Summary: summary.Text(), Date: parsedDate.String(), Corp: company.KAKAOBANK}
 		posts = append(posts, post)
 	})
 	return posts
+}
+
+func processUrl(path string) string {
+	if parsedPath, err := url.Parse(path); err != nil {
+		fmt.Println("KakaoBank scrapper url parsing error", err)
+		return baseURL
+	} else {
+		return parsedURL.ResolveReference(parsedPath).String()
+	}
+}
+
+func normalizePath(path string) string {
+	cleanPath := filepath.Clean(path)
+	dir := filepath.Base(cleanPath)
+	return "/posts/" + strings.TrimPrefix(dir, "/")
 }
