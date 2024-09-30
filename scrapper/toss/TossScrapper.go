@@ -44,9 +44,16 @@ func getPages() []Post {
 		if len(title.Text()) != 0 {
 			split := strings.Split(originalDateString, "·")
 			date, _ := time.Parse("2006년 1월 2일", strings.TrimSpace(split[0])) // 문자열을 날짜로 파싱
-			post := Post{Title: title.Text(), Url: postURL + href, Summary: summary.Text(), Date: date.String(), Corp: company.TOSS}
+			post := Post{Title: title.Text(), Url: checkUrl(href), Summary: summary.Text(), Date: date.String(), Corp: company.TOSS}
 			posts = append(posts, post)
 		}
 	})
 	return posts
+}
+
+func checkUrl(href string) string {
+	if strings.HasPrefix(href, "https://") {
+		return href
+	}
+	return postURL + href
 }
