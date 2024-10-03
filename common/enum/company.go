@@ -16,4 +16,5 @@ const (
 	DEVSISTERS Company = "DEVSISTERS"
 	OHOUSE     Company = "OHOUSE"
 	LINE       Company = "LINE"
+	SOCAR      Company = "SOCAR"
 )
