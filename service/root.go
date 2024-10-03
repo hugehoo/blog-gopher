@@ -13,6 +13,7 @@ import (
 	"blog-gopher/scrapper/line"
 	"blog-gopher/scrapper/musinsa"
 	"blog-gopher/scrapper/oliveyoung"
+	"blog-gopher/scrapper/socar"
 	"blog-gopher/scrapper/toss"
 	"blog-gopher/scrapper/twonine"
 	"sync"
@@ -42,6 +43,7 @@ func (s *Service) SearchPosts(value string, page int, size int) []Post {
 
 func CallGoroutineChannel(result []Post) []Post {
 	scrapers := []func() []Post{
+		socar.CallApi,
 		kakaopay.CallApi,
 		kakaobank.CallApi,
 		oliveyoung.CallApi,
