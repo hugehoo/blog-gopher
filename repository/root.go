@@ -47,7 +47,7 @@ func (r *Repository) InsertBlogs(posts []types.Post) {
 
 func (r *Repository) FindBlogs(corps []string, page int, pageSize int) []types.Post {
 	// 데이터 정렬 및 페이징
-	options := options.Find().
+	pagingOptions := options.Find().
 		SetSort(bson.D{{"date", -1}})
 	//.         // 날짜를 기준으로 내림차순 정렬
 	//	SetSkip(int64((page - 1) * pageSize)). // 페이지 건너뛰기
@@ -62,7 +62,7 @@ func (r *Repository) FindBlogs(corps []string, page int, pageSize int) []types.P
 		filter = bson.M{}
 	}
 
-	cursor, err := r.collection.Find(context.TODO(), filter, options)
+	cursor, err := r.collection.Find(context.TODO(), filter, pagingOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,7 +90,8 @@ func (r *Repository) SearchBlogs(searchWord string, page int, size int) []types.
 	//		"$search": searchWord,
 	//	},
 	//}
-
+	pagingOptions := options.Find().
+		SetSort(bson.D{{"date", -1}})
 	// title 필드에서 검색하는 쿼리 생성 - 정규 표현식 사용
 	filter := bson.M{
 		"title": bson.M{
@@ -98,7 +99,7 @@ func (r *Repository) SearchBlogs(searchWord string, page int, size int) []types.
 			"$options": "i", // 대소문자 구분 없음
 		},
 	}
-	cursor, err := r.collection.Find(context.TODO(), filter)
+	cursor, err := r.collection.Find(context.TODO(), filter, pagingOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
