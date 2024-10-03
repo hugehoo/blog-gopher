@@ -10,5 +10,6 @@ type Post struct {
 	Url     string
 	Summary string
 	Date    string
+	Content string
 	Corp    compnay.Company
 }

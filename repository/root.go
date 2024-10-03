@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"blog-gopher/common/dto"
 	"blog-gopher/common/types"
 	"blog-gopher/config"
 	"context"
@@ -26,13 +27,7 @@ func NewRepository() (*Repository, error) {
 func (r *Repository) InsertBlogs(posts []types.Post) {
 	var documents []interface{}
 	for _, post := range posts {
-		doc := bson.D{
-			{"title", post.Title},
-			{"url", post.Url},
-			{"summary", post.Summary},
-			{"date", post.Date},
-			{"corp", post.Corp},
-		}
+		doc := dto.InsertPost(post)
 		documents = append(documents, doc)
 	}
 	if len(posts) == 0 {
@@ -49,9 +44,6 @@ func (r *Repository) FindBlogs(corps []string, page int, pageSize int) []types.P
 	// 데이터 정렬 및 페이징
 	pagingOptions := options.Find().
 		SetSort(bson.D{{"date", -1}})
-	//.         // 날짜를 기준으로 내림차순 정렬
-	//	SetSkip(int64((page - 1) * pageSize)). // 페이지 건너뛰기
-	//	SetLimit(int64(pageSize))              // 페이지 크기 설정
 
 	var filter bson.M
 	if len(corps) > 0 { // corps 배열에 값이 있을 때만 $in 필터 적용
@@ -84,19 +76,14 @@ func (r *Repository) DeleteAll() {
 }
 
 func (r *Repository) SearchBlogs(searchWord string, page int, size int) []types.Post {
-
-	//filter := bson.M{
-	//	"$text": bson.M{
-	//		"$search": searchWord,
-	//	},
-	//}
+	// title 필드에서 검색하는 쿼리 생성 - 정규 표현식 사용
 	pagingOptions := options.Find().
 		SetSort(bson.D{{"date", -1}})
-	// title 필드에서 검색하는 쿼리 생성 - 정규 표현식 사용
+
 	filter := bson.M{
-		"title": bson.M{
-			"$regex":   searchWord,
-			"$options": "i", // 대소문자 구분 없음
+		"$or": []bson.M{
+			{"title": bson.M{"$regex": searchWord, "$options": "i"}},
+			{"content": bson.M{"$regex": searchWord, "$options": "i"}},
 		},
 	}
 	cursor, err := r.collection.Find(context.TODO(), filter, pagingOptions)
