@@ -6,6 +6,7 @@ import (
 	"blog-gopher/repository"
 	"blog-gopher/service"
 	"context"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
@@ -15,6 +16,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -105,8 +107,62 @@ func localHandler() {
 	r.POST("/", func(c *gin.Context) {
 		s.UpdateAllPosts()
 	})
+
+	r.POST("/content", func(c *gin.Context) {
+		updatePostContent(c, s)
+	})
+
 	r.Run()
 }
+
+func updatePostContent(c *gin.Context, s *service.Service) {
+	var corp []string
+	posts := s.GetPosts(corp, 0, 1)
+	maxConcurrent := 10
+	semaphore := make(chan struct{}, maxConcurrent)
+
+	var wg sync.WaitGroup
+
+	for _, post := range posts {
+		wg.Add(1)
+		semaphore <- struct{}{} // 세마포어를 획득
+
+		go func(post types.Post) {
+			defer wg.Done()
+			defer func() { <-semaphore }() // 작업이 끝나면 세마포어를 해제
+
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			req, err := http.NewRequestWithContext(ctx, "GET", post.Url, nil)
+			if err != nil {
+				log.Printf("Error creating request for post %s: %v", post.ID, err)
+				return
+			}
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				log.Printf("Error fetching URL for post %s: %v \n %v", post.ID, post.Url, err)
+				return
+			}
+			defer resp.Body.Close()
+
+			doc, err := goquery.NewDocumentFromReader(resp.Body)
+			if err != nil {
+				log.Printf("Error parsing HTML for post %s: %v", post.ID, err)
+				return
+			}
+
+			doc.Find("script, style").Remove()
+			text := strings.TrimSpace(doc.Text())
+			s.UpdatePost(post.ID, text)
+		}(post)
+	}
+
+	wg.Wait() // 모든 고루틴이 완료될 때까지 대기
+	log.Println("All posts have been processed")
+}
+
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	log.Printf("Handling request: %s %s", request.HTTPMethod, request.Path)
 	return ginLambda.ProxyWithContext(ctx, request)
