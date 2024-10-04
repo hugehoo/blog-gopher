@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	"regexp"
 )
 
 type Repository struct {
@@ -80,15 +79,8 @@ func (r *Repository) DeleteAll() {
 
 func (r *Repository) SearchBlogs(searchWord string) []types.Post {
 	pipeline := mongo.Pipeline{
-		// 텍스트 검색과 정규식 검색 결합
 		bson.D{{Key: "$match", Value: bson.M{
-			"$and": []bson.M{
-				{"$text": bson.M{"$search": searchWord}},
-				{"$or": []bson.M{
-					{"title": bson.M{"$regex": fmt.Sprintf("\\b%s\\b", regexp.QuoteMeta(searchWord)), "$options": "i"}},
-					{"content": bson.M{"$regex": fmt.Sprintf("\\b%s\\b", regexp.QuoteMeta(searchWord)), "$options": "i"}},
-				}},
-			},
+			"$text": bson.M{"$search": fmt.Sprintf("\"%s\"", searchWord)},
 		}}},
 		// 텍스트 검색 스코어 추가
 		bson.D{{Key: "$addFields", Value: bson.M{
