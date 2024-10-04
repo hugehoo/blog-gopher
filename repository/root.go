@@ -87,7 +87,7 @@ func (r *Repository) SearchBlogs(searchWord string) []types.Post {
 			"score": bson.M{"$meta": "textScore"},
 		}}},
 		bson.D{{Key: "$match", Value: bson.M{
-			"score": bson.M{"$gte": 0.8},
+			"score": bson.M{"$gte": 0.75},
 		}}},
 		// 정렬: 먼저 스코어로, 그 다음 날짜로
 		bson.D{{Key: "$sort", Value: bson.D{
