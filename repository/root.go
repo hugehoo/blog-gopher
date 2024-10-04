@@ -5,10 +5,13 @@ import (
 	"blog-gopher/common/types"
 	"blog-gopher/config"
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"regexp"
 )
 
 type Repository struct {
@@ -75,18 +78,40 @@ func (r *Repository) DeleteAll() {
 
 }
 
-func (r *Repository) SearchBlogs(searchWord string, page int, size int) []types.Post {
-	// title 필드에서 검색하는 쿼리 생성 - 정규 표현식 사용
-	pagingOptions := options.Find().
-		SetSort(bson.D{{"date", -1}})
-
-	filter := bson.M{
-		"$or": []bson.M{
-			{"title": bson.M{"$regex": searchWord, "$options": "i"}},
-			{"content": bson.M{"$regex": searchWord, "$options": "i"}},
-		},
+func (r *Repository) SearchBlogs(searchWord string) []types.Post {
+	pipeline := mongo.Pipeline{
+		// 텍스트 검색과 정규식 검색 결합
+		bson.D{{Key: "$match", Value: bson.M{
+			"$and": []bson.M{
+				{"$text": bson.M{"$search": searchWord}},
+				{"$or": []bson.M{
+					{"title": bson.M{"$regex": fmt.Sprintf("\\b%s\\b", regexp.QuoteMeta(searchWord)), "$options": "i"}},
+					{"content": bson.M{"$regex": fmt.Sprintf("\\b%s\\b", regexp.QuoteMeta(searchWord)), "$options": "i"}},
+				}},
+			},
+		}}},
+		// 텍스트 검색 스코어 추가
+		bson.D{{Key: "$addFields", Value: bson.M{
+			"score": bson.M{"$meta": "textScore"},
+		}}},
+		bson.D{{Key: "$match", Value: bson.M{
+			"score": bson.M{"$gte": 0.8},
+		}}},
+		// 정렬: 먼저 스코어로, 그 다음 날짜로
+		bson.D{{Key: "$sort", Value: bson.D{
+			{Key: "score", Value: -1},
+			{Key: "date", Value: -1},
+		}}},
+		// 결과 프로젝션
+		bson.D{{Key: "$project", Value: bson.M{
+			"title":   1,
+			"date":    1,
+			"url":     1,
+			"corp":    1,
+			"summary": 1,
+		}}},
 	}
-	cursor, err := r.collection.Find(context.TODO(), filter, pagingOptions)
+	cursor, err := r.collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,4 +123,15 @@ func (r *Repository) SearchBlogs(searchWord string, page int, size int) []types.
 	}
 
 	return results
+}
+
+func (r *Repository) UpdatePost(postID string, text string) (interface{}, interface{}) {
+	objectID, err := primitive.ObjectIDFromHex(postID) // objectIDFromHex 이걸 해줬어야 했는데, 이거 없이 걍 string 으로 필터치려고 하니 업데이트가 안됐다.
+	filter := bson.M{"_id": objectID}
+	update := bson.M{"$set": bson.M{"content": text}}
+	result, err := r.collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update post: %v", err)
+	}
+	return result, nil
 }

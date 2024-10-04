@@ -16,6 +16,7 @@ import (
 	"blog-gopher/scrapper/socar"
 	"blog-gopher/scrapper/toss"
 	"blog-gopher/scrapper/twonine"
+	"log"
 	"sync"
 )
 
@@ -38,7 +39,16 @@ func (s Service) UpdateAllPosts() {
 }
 
 func (s *Service) SearchPosts(value string, page int, size int) []Post {
-	return s.repo.SearchBlogs(value, page, size)
+	return s.repo.SearchBlogs(value)
+}
+
+func (s *Service) UpdatePost(postID string, text string) {
+	_, err := s.repo.UpdatePost(postID, text)
+	if err != nil {
+		log.Printf("Error updating post %s: %v", postID, err)
+	} else {
+		log.Printf("Successfully updated post %s", postID)
+	}
 }
 
 func CallGoroutineChannel(result []Post) []Post {
