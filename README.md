@@ -11,11 +11,11 @@
 - Gin v1.10
 - Goquery v1.9.2
 - MongoDB
+- AWS Lambda
 
 ### API
 - [X] GET `/posts` : 블로그 전체 조회
 - [X] GET `/search` : 블로그 검색
-- [ ] POST `/posts/save` : 블로그 저장
 
 ### Scrapping Blogs
 - [X] 당근
@@ -37,10 +37,10 @@
 - [ ] 리디
 
 ### Main Feature
-- Tech blog scrapper
-- Check read article(blog)
-- Categorizing by corp
-- Bookmark article
+- [X] Tech blog scrapper
+- [X] Categorizing by corp
+- [ ] Check read article(blog)
+- [ ] Bookmark article
 
 ### Todo 
 - [X] goroutine
