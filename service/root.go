@@ -12,6 +12,7 @@ import (
 	"blog-gopher/scrapper/kurly"
 	"blog-gopher/scrapper/line"
 	"blog-gopher/scrapper/musinsa"
+	"blog-gopher/scrapper/naverpay"
 	"blog-gopher/scrapper/oliveyoung"
 	"blog-gopher/scrapper/socar"
 	"blog-gopher/scrapper/toss"
@@ -53,6 +54,7 @@ func (s *Service) UpdatePost(postID string, text string) {
 
 func CallGoroutineChannel(result []Post) []Post {
 	scrapers := []func() []Post{
+		naverpay.CallApi,
 		socar.CallApi,
 		kakaopay.CallApi,
 		kakaobank.CallApi,

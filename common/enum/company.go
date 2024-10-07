@@ -4,6 +4,7 @@ type Company string
 
 const (
 	KAKAOPAY   Company = "KAKAOPAY"
+	NAVERPAY   Company = "NAVERPAY"
 	KAKAOBANK  Company = "KAKAOBANK"
 	OLIVE      Company = "OLIVE"
 	BANKSALAD  Company = "BANKSALAD"
