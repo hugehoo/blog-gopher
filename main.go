@@ -59,6 +59,10 @@ func init() {
 		c.JSON(http.StatusOK, searchPosts(c, s))
 	})
 
+	r.GET("/search/blog/:blogId", func(c *gin.Context) {
+		c.JSON(http.StatusOK, getBlogById(c, s))
+	})
+
 	ginLambda = ginadapter.New(r)
 	log.Println("✅ Initialization complete")
 }
@@ -102,6 +106,10 @@ func localHandler() {
 
 	r.GET("/search", func(c *gin.Context) {
 		c.JSON(http.StatusOK, searchPosts(c, s))
+	})
+
+	r.GET("/search/blog/:blogId", func(c *gin.Context) {
+		c.JSON(http.StatusOK, getBlogById(c, s))
 	})
 
 	r.POST("/", func(c *gin.Context) {
@@ -240,4 +248,9 @@ func getPosts(c *gin.Context, s *service.Service) []dto.PostDTO {
 		response[idx] = dto.ConvertToDTO(result)
 	}
 	return response
+}
+
+func getBlogById(c *gin.Context, s *service.Service) dto.PostDTO {
+	result := s.SearchPostsById(c.Param("blogId"))
+	return dto.ConvertToDTO(result)
 }
