@@ -33,6 +33,10 @@ func (s *Service) GetPosts(category []string, page int, pageSize int) []Post {
 	return s.repo.FindBlogs(category, page, pageSize)
 }
 
+func (s *Service) SearchPostsById(id string) Post {
+	return s.repo.SearchPostById(id)
+}
+
 func (s Service) UpdateAllPosts() {
 	var result []Post
 	result = CallGoroutineChannel(result)

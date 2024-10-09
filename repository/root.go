@@ -127,3 +127,16 @@ func (r *Repository) UpdatePost(postID string, text string) (interface{}, interf
 	}
 	return result, nil
 }
+
+func (r *Repository) SearchPostById(id string) types.Post {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	var result types.Post
+	if err := r.collection.FindOne(context.TODO(), (bson.M{"_id": objectID})).Decode(&result); err != nil {
+		log.Println("Can't find Post")
+	} else {
+		if err := r.mongo.Disconnect(context.TODO()); err != nil {
+			log.Println("Error when disconnect")
+		}
+	}
+	return result
+}
