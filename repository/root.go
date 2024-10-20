@@ -133,10 +133,16 @@ func (r *Repository) SearchPostById(id string) types.Post {
 	var result types.Post
 	if err := r.collection.FindOne(context.TODO(), (bson.M{"_id": objectID})).Decode(&result); err != nil {
 		log.Println("Can't find Post")
-	} else {
-		if err := r.mongo.Disconnect(context.TODO()); err != nil {
-			log.Println("Error when disconnect")
-		}
 	}
 	return result
+}
+
+func (r *Repository) GetLatestPost() string {
+	opts := options.FindOne().SetSort(bson.D{{"date", -1}}) // date 필드를 기준으로 내림차순 정렬
+	var result types.Post
+	if err := r.collection.FindOne(context.TODO(), bson.M{}, opts).Decode(&result); err != nil {
+		log.Println("can't find latest post")
+	}
+	log.Println("latest date, ", result.Date)
+	return result.Date
 }

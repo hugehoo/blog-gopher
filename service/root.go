@@ -19,6 +19,7 @@ import (
 	"blog-gopher/scrapper/twonine"
 	"log"
 	"sync"
+	"time"
 )
 
 type Service struct {
@@ -38,9 +39,23 @@ func (s *Service) SearchPostsById(id string) Post {
 }
 
 func (s Service) UpdateAllPosts() {
-	var result []Post
-	result = CallGoroutineChannel(result)
+	result := CallGoroutineChannel()
 	s.repo.InsertBlogs(result)
+}
+
+func (s Service) UpdateLatestPosts() {
+	result := CallGoroutineChannel()
+
+	savedLatestDate := s.repo.GetLatestPost()
+	parsedLatestDate, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", savedLatestDate)
+	var filterResult []Post
+	for _, res := range result {
+		date, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", res.Date)
+		if date.After(parsedLatestDate) {
+			filterResult = append(filterResult, res)
+		}
+	}
+	s.repo.InsertBlogs(filterResult)
 }
 
 func (s *Service) SearchPosts(value string, page int, size int) []Post {
@@ -56,7 +71,7 @@ func (s *Service) UpdatePost(postID string, text string) {
 	}
 }
 
-func CallGoroutineChannel(result []Post) []Post {
+func CallGoroutineChannel() []Post {
 	scrapers := []func() []Post{
 		naverpay.CallApi,
 		socar.CallApi,
@@ -90,6 +105,7 @@ func CallGoroutineChannel(result []Post) []Post {
 		close(resultChan)
 	}()
 
+	var result []Post
 	for posts := range resultChan {
 		result = append(result, posts...)
 	}
