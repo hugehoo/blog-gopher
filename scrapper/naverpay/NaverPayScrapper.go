@@ -4,22 +4,20 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
+	"blog-gopher/common/utils"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"time"
 )
 
+var urls = []string{
+	"https://medium.com/naverfinancial/fe/home",
+	"https://medium.com/naverfinancial/be/home",
+}
+
 func CallApi() []Post {
-
-	var result []Post
-	var feURL = "https://medium.com/naverfinancial/fe/home"
-	var beURL = "https://medium.com/naverfinancial/be/home"
-
-	// single-page blog
-	result = append(result, getPages(feURL)...)
-	result = append(result, getPages(beURL)...)
-	return result
+	return utils.CallApiTemplate(getPages, urls)
 }
 
 func getPages(pageURL string) []Post {
