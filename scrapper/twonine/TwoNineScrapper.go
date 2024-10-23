@@ -4,29 +4,28 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
+	"blog-gopher/common/utils"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-var baseURL = "https://medium.com/29cm/backend/home"
-var pageURL = baseURL
+var urls = []string{
+	"https://medium.com/29cm/backend/home",
+	"https://medium.com/29cm/data/home",
+	"https://medium.com/29cm/mobile/home",
+	"https://medium.com/29cm/frontend/home",
+}
 
 func CallApi() []Post {
-
-	var result []Post
-
-	// single-page blog
-	pages := getPages()
-	result = append(result, pages...)
-	return result
+	return utils.CallApiTemplate(getPages, urls)
 }
 
 /*
 * 당근 - 미디엄은 해당 연도에 발행된 글은 year 를 생략해서 표현함. 올해 이전에 발행된 글엔 year 를 붙인다.
  */
-func getPages() []Post {
+func getPages(pageURL string) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)
