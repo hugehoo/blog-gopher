@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,8 +21,27 @@ var parsedURL, _ = url.Parse(baseURL)
 
 func CallApi() []Post {
 	var result []Post
-	for i := 1; i < 7; i++ {
-		pages := getPages(i)
+	resultChan := make(chan []Post)
+	var wg sync.WaitGroup
+	maxPages := 7
+
+	for i := 1; i < maxPages; i++ {
+		wg.Add(1)
+		go func(page int) {
+			defer wg.Done()
+			pages := getPages(i)
+			if len(pages) > 0 {
+				resultChan <- pages
+			}
+		}(i)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	for pages := range resultChan {
 		result = append(result, pages...)
 	}
 	return result

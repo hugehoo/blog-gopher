@@ -7,6 +7,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -14,8 +15,27 @@ const baseURL = "https://tech.socarcorp.kr"
 
 func CallApi() []Post {
 	var result []Post
-	for i := 1; i < 13; i++ {
-		pages := getPages(i)
+	var wg sync.WaitGroup
+	resultChan := make(chan []Post)
+
+	maxPages := 13
+	for i := 1; i < maxPages; i++ {
+		wg.Add(1)
+		go func(page int) {
+			defer wg.Done()
+			pages := getPages(i)
+			if len(pages) > 0 {
+				resultChan <- pages
+			}
+		}(i)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	for pages := range resultChan {
 		result = append(result, pages...)
 	}
 	return result
