@@ -27,5 +27,7 @@ func ConnectMongoDB(uri string) *mongo.Client {
 }
 
 func GetCollection(database, collection string) *mongo.Collection {
-	return Client.Database(database).Collection(collection)
+	return Client.
+		Database(database).
+		Collection(collection)
 }
