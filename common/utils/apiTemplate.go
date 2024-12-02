@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func CallApiTemplate(
+func CallGoroutineApi(
 	getPages func(url string) []types.Post,
 	urls []string,
 ) []types.Post {
@@ -13,7 +13,6 @@ func CallApiTemplate(
 	type Result struct {
 		Posts []types.Post
 	}
-	var response []types.Post
 	var wg sync.WaitGroup
 	resultChan := make(chan Result, len(urls))
 	for _, url := range urls {
@@ -32,6 +31,7 @@ func CallApiTemplate(
 		close(resultChan)
 	}()
 
+	var response []types.Post
 	for result := range resultChan {
 		response = append(response, result.Posts...)
 	}
