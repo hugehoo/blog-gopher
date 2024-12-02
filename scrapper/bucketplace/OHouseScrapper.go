@@ -59,7 +59,7 @@ func getPages(page int) []Post {
 			Title:   data.Frontmatter.Title,
 			Url:     "https://www.bucketplace.com" + data.Frontmatter.Slug,
 			Summary: data.Frontmatter.Description,
-			Date:    data.Frontmatter.Date.String(),
+			Date:    data.Frontmatter.Date,
 			Corp:    company.OHOUSE}
 		posts = append(posts, post)
 	}

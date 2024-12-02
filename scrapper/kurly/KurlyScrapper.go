@@ -49,7 +49,7 @@ func getPages() []Post {
 				Title:   title,
 				Url:     baseURL + href,
 				Summary: summary,
-				Date:    date.String(),
+				Date:    date,
 				Corp:    company.KURLY}
 			posts = append(posts, post)
 		}

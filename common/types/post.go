@@ -2,6 +2,7 @@ package types
 
 import (
 	compnay "blog-gopher/common/enum"
+	"time"
 )
 
 type Post struct {
@@ -9,7 +10,7 @@ type Post struct {
 	Title   string
 	Url     string
 	Summary string
-	Date    string
+	Date    time.Time
 	Content string
 	Corp    compnay.Company
 }

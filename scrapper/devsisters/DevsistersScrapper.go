@@ -41,7 +41,7 @@ func getJsonPage(i int) []Post {
 			Title:   res.Node.Frontmatter.Title,
 			Url:     baseURL + path,
 			Summary: res.Node.Frontmatter.Summary,
-			Date:    parsedDate.String(),
+			Date:    parsedDate,
 			Corp:    company.DEVSISTERS}
 		posts = append(posts, post)
 	}

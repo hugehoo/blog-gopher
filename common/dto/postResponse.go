@@ -3,7 +3,6 @@ package dto
 import (
 	compnay "blog-gopher/common/enum"
 	. "blog-gopher/common/types"
-	"time"
 )
 
 type PostDTO struct {
@@ -16,8 +15,7 @@ type PostDTO struct {
 }
 
 func ConvertToDTO(post Post) PostDTO {
-	parsedTime, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", post.Date)
-	dateOnly := parsedTime.Format("2006-01-02")
+	dateOnly := post.Date.Format("2006-01-02")
 	return PostDTO{
 		Id:      post.ID,
 		Title:   post.Title,

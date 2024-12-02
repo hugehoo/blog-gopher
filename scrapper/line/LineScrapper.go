@@ -61,7 +61,7 @@ func getPages(page int) []Post {
 			Title:   data.Node.Title,
 			Url:     baseUrl + data.Node.Slug,
 			Summary: "",
-			Date:    parsedTime.String(),
+			Date:    parsedTime,
 			Corp:    company.LINE}
 		posts = append(posts, post)
 	}

@@ -17,7 +17,7 @@ var urls = []string{
 }
 
 func CallApi() []Post {
-	return utils.CallApiTemplate(getPages, urls)
+	return utils.CallGoroutineApi(getPages, urls)
 }
 
 func getPages(pageURL string) []Post {
@@ -41,7 +41,7 @@ func getPages(pageURL string) []Post {
 		date := selection.Find("time")
 		if title != "" {
 			date, _ := time.Parse("Jan 2, 2006", processYear(date)) // 문자열을 날짜로 파싱
-			post := Post{Title: title, Url: href, Summary: summary.Text(), Date: date.String(), Corp: company.NAVERPAY}
+			post := Post{Title: title, Url: href, Summary: summary.Text(), Date: date, Corp: company.NAVERPAY}
 			posts = append(posts, post)
 		}
 	})
