@@ -190,7 +190,6 @@ func (s *Service) UpdatePost(postID string, text string) {
 
 func CallGoroutineChannel() []Post {
 	scrapers := []func() []Post{
-		//kmong.CallApi,
 		naverpay.CallApi,
 		socar.CallApi,
 		kakaopay.CallApi,
@@ -211,13 +210,12 @@ func CallGoroutineChannel() []Post {
 	var wg sync.WaitGroup
 	for _, scraper := range scrapers {
 		wg.Add(1)
-		go func(scrapeFunc func() []Post) {
+		go func(scrapingFunc func() []Post) {
 			defer wg.Done()
-			resultChan <- scrapeFunc()
+			resultChan <- scrapingFunc()
 		}(scraper)
 	}
 
-	// 결과 수집을 위한 고루틴
 	go func() {
 		wg.Wait()
 		close(resultChan)
