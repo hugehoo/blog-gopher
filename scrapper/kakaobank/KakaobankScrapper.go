@@ -64,13 +64,14 @@ func getPages(page int) []Post {
 	CheckErr(err)
 	doc.Find(".post").Each(func(i int, selection *goquery.Selection) {
 		title := selection.Find(".post-title").Text()
-		date := selection.Find(".date")
+		date := selection.Find(".post-meta").Find(".date")
 		summary := selection.Find(".post-summary")
 		href, _ := selection.Find(".post-title>a").Attr("href")
 		parsedDate, _ := time.Parse("2006-01-02", strings.TrimSpace(date.Text()))
 		post := Post{Title: strings.TrimSpace(title), Url: processUrl(href), Summary: summary.Text(), Date: parsedDate, Corp: company.KAKAOBANK}
 		posts = append(posts, post)
 	})
+	//return []Post{}
 	return posts
 }
 
