@@ -15,7 +15,6 @@ var postURL = "https://toss.tech"
 var pageURL = baseURL
 
 func CallApi() []Post {
-
 	var result []Post
 
 	// single-page blog
@@ -35,7 +34,7 @@ func getPages() []Post {
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	CheckErr(err)
-	doc.Find(".css-clywuu>li>a").Each(func(i int, selection *goquery.Selection) {
+	doc.Find(".css-132j2b5>li>a").Each(func(i int, selection *goquery.Selection) {
 		href, _ := selection.Attr("href")
 		innerDiv := selection.Find(".css-1e3wa1f")
 		title := innerDiv.Find(".typography--h6")
