@@ -11,6 +11,7 @@ import (
 )
 
 const baseURL = "https://oliveyoung.tech/blog"
+const OliveUrl = "https://oliveyoung.tech"
 
 func CallApi() []Post {
 	var result []Post
@@ -39,10 +40,17 @@ func getPages(page int) []Post {
 	doc.Find(".PostList-module--item--95839>a").Each(func(i int, selection *goquery.Selection) {
 		href, _ := selection.Attr("href")
 		div := selection.Find(".PostList-module--content--de4e3")
-		title := div.Find(".PostList-module--title--a2e55")
+		title := div.Find(".PostList-module--title--a2e55").Text()
 		date := div.Find(".PostList-module--date--21238")
+		summary := div.Find(".PostList-module--sub--424ed").Text()
 		parsedDate, _ := time.Parse("2006-01-02", date.Text())
-		post := Post{Title: title.Text(), Url: "https://oliveyoung.tech" + href, Summary: "", Date: parsedDate, Corp: company.OLIVE}
+		post := Post{
+			Title:   title,
+			Url:     OliveUrl + href,
+			Summary: summary,
+			Date:    parsedDate,
+			Corp:    company.OLIVE,
+		}
 		posts = append(posts, post)
 	})
 	return posts
