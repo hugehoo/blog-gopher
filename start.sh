@@ -1,5 +1,5 @@
 go run . &
-sleep 3 && command
+sleep 4 && command
 
 curl -X POST "http://localhost:8080/latest"
 
