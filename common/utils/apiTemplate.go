@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"blog-gopher/common/types"
 	"sync"
+
+	"blog-gopher/common/types"
 )
 
 func CallGoroutineApi(
