@@ -5,22 +5,26 @@ import (
 	"blog-gopher/common/utils"
 	"context"
 	"fmt"
-	"github.com/chromedp/cdproto/cdp"
-	"github.com/chromedp/chromedp"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/chromedp"
 )
+
+type Kmong struct {
+}
 
 var urls = []string{
 	"https://blog.kmong.com/tech/home",
 }
 
-func CallApi() []Post {
-	return utils.CallGoroutineApi(getPages, urls)
+func (k *Kmong) CallApi() []Post {
+	return utils.CallGoroutineApi(k.getPages, urls)
 }
 
-func getPages(page string) []Post {
+func (k *Kmong) getPages(page string) []Post {
 	ctx, cancel := chromedp.NewContext(
 		context.Background(),
 		chromedp.WithLogf(log.Printf),
@@ -69,6 +73,12 @@ func getPages(page string) []Post {
 	return nil
 }
 
+func (k *Kmong) GetPages(page int) []Post {
+	// Kmong uses a different approach with ChromeDP, so we'll return empty for now
+	// The actual implementation uses getPages with specific URLs and ChromeDP
+	return []Post{}
+}
+
 func scrapePostsWithScroll(postChan chan<- Post) chromedp.ActionFunc {
 	return func(ctx context.Context) error {
 		var previousHeight int
@@ -101,13 +111,19 @@ func scrapePostsWithScroll(postChan chan<- Post) chromedp.ActionFunc {
 				post.Url = postURL
 
 				// Extract other post data
+				var dateStr string
 				if err := chromedp.Run(ctx,
 					chromedp.Text(".u-fontSize24", &post.Title, chromedp.ByQuery, chromedp.FromNode(node)),
 					//chromedp.Text(".u-fontSize18", &post.Subtitle, chromedp.ByQuery, chromedp.FromNode(node)),
 					//chromedp.Text(".ds-link--styleSubtle", &post.Author, chromedp.ByQuery, chromedp.FromNode(node)),
-					chromedp.Text("time", &post.Date, chromedp.ByQuery, chromedp.FromNode(node)),
+					chromedp.Text("time", &dateStr, chromedp.ByQuery, chromedp.FromNode(node)),
 				); err != nil {
 					continue
+				}
+
+				// Parse the date string to time.Time
+				if parsedDate, err := time.Parse("2006-01-02", dateStr); err == nil {
+					post.Date = parsedDate
 				}
 
 				// Extract image URL from background-image style

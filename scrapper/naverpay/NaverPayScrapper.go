@@ -5,22 +5,26 @@ import (
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"blog-gopher/common/utils"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Naverpay struct {
+}
 
 var urls = []string{
 	"https://medium.com/naverfinancial/fe/home",
 	"https://medium.com/naverfinancial/be/home",
 }
 
-func CallApi() []Post {
-	return utils.CallGoroutineApi(getPages, urls)
+func (n *Naverpay) CallApi() []Post {
+	return utils.CallGoroutineApi(n.getPages, urls)
 }
 
-func getPages(pageURL string) []Post {
+func (n *Naverpay) getPages(pageURL string) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)
@@ -46,6 +50,12 @@ func getPages(pageURL string) []Post {
 		}
 	})
 	return posts
+}
+
+func (n *Naverpay) GetPages(page int) []Post {
+	// Naverpay uses a different approach with multiple URLs, so we'll return empty for now
+	// The actual implementation uses getPages with specific URLs
+	return []Post{}
 }
 
 func processYear(date *goquery.Selection) string {

@@ -11,7 +11,10 @@ import (
 	"time"
 )
 
-func CallApi() []Post {
+type Line struct {
+}
+
+func (l *Line) CallApi() []Post {
 	resultChan := make(chan []Post)
 	var wg sync.WaitGroup
 
@@ -20,7 +23,7 @@ func CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := getPages(i)
+			pages := l.GetPages(i)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
@@ -40,7 +43,7 @@ func CallApi() []Post {
 
 const baseUrl = "https://techblog.lycorp.co.jp/ko/"
 
-func getPages(page int) []Post {
+func (l *Line) GetPages(page int) []Post {
 	var posts []Post
 	var url string
 	if page == 1 {

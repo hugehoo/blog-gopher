@@ -1,20 +1,27 @@
 package buzzvil
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
-	"github.com/PuerkitoBio/goquery"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 )
+
+type Buzzvil struct {
+}
 
 var baseURL = "https://tech.buzzvil.com"
 var pageURL = baseURL + "/page/"
 
-func CallApi() []Post {
+func (b *Buzzvil) CallApi() []Post {
 
 	// 어케 totalPage 를 파악하지
 	// page 범위를 넘어가면 404 를 뱉는다.
@@ -27,7 +34,7 @@ func CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := getPages(page)
+			pages := b.GetPages(page)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
@@ -45,7 +52,7 @@ func CallApi() []Post {
 	return result
 }
 
-func getPages(page int) []Post {
+func (b *Buzzvil) GetPages(page int) []Post {
 
 	var posts []Post
 	var res *http.Response
@@ -54,11 +61,18 @@ func getPages(page int) []Post {
 	if page > 1 {
 		res, err = http.Get(pageURL + strconv.Itoa(page))
 	} else {
-		res, err = http.Get(baseURL)
+		fmt.Println("GET:", baseURL)
+		res, err = http.Get(baseURL) // err 를 뱉지않고 바로 panic 이 나버리네.
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			log.Println("R:", res)
+		}
+		fmt.Println("END:", page)
 	}
-
-	CheckErr(err)
-	CheckCode(res)
+	CheckErr(err)  // 어떤 url 에서 터지는지 알아야함.
+	CheckCode(res) // 어떤 url 에서 터지는지 알아야함.
+	fmt.Println("After")
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)

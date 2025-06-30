@@ -4,25 +4,29 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Oliveyoung struct {
+}
 
 const baseURL = "https://oliveyoung.tech/blog"
 const OliveUrl = "https://oliveyoung.tech"
 
-func CallApi() []Post {
+func (o *Oliveyoung) CallApi() []Post {
 	var result []Post
 	for i := 1; i < 11; i++ {
-		pages := getPages(i)
+		pages := o.GetPages(i)
 		result = append(result, pages...)
 	}
 	return result
 }
 
-func getPages(page int) []Post {
+func (o *Oliveyoung) GetPages(page int) []Post {
 	var posts []Post
 	var url string
 	if page == 1 {

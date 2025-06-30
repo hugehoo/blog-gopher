@@ -11,7 +11,10 @@ import (
 	"time"
 )
 
-func CallApi() []Post {
+type Bucketplace struct {
+}
+
+func (b *Bucketplace) CallApi() []Post {
 	resultChan := make(chan []Post)
 	var wg sync.WaitGroup
 
@@ -20,7 +23,7 @@ func CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := getPages(page)
+			pages := b.GetPages(page)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
@@ -39,7 +42,7 @@ func CallApi() []Post {
 	return result
 }
 
-func getPages(page int) []Post {
+func (b *Bucketplace) GetPages(page int) []Post {
 	var posts []Post
 	var url string
 	if page == 1 {

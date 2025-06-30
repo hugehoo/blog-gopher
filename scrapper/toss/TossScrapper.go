@@ -4,26 +4,30 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Toss struct {
+}
 
 var baseURL = "https://toss.tech/tech"
 var postURL = "https://toss.tech"
 var pageURL = baseURL
 
-func CallApi() []Post {
+func (t *Toss) CallApi() []Post {
 	var result []Post
 
 	// single-page blog
-	pages := getPages()
+	pages := t.GetPages(1)
 	result = append(result, pages...)
 	return result
 }
 
-func getPages() []Post {
+func (t *Toss) GetPages(page int) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)

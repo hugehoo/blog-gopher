@@ -4,21 +4,25 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Kurly struct {
+}
 
 var baseURL = "https://helloworld.kurly.com"
 var pageURL = baseURL
 
-func CallApi() []Post {
+func (k *Kurly) CallApi() []Post {
 
 	var result []Post
 
 	// single-page blog
-	pages := getPages()
+	pages := k.GetPages(1)
 	result = append(result, pages...)
 	return result
 }
@@ -26,7 +30,7 @@ func CallApi() []Post {
 /*
 * 당근 - 미디엄은 해당 연도에 발행된 글은 year 를 생략해서 표현함. 올해 이전에 발행된 글엔 year 를 붙인다.
  */
-func getPages() []Post {
+func (k *Kurly) GetPages(page int) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)
@@ -56,6 +60,7 @@ func getPages() []Post {
 	})
 	return posts
 }
+
 func processYear(date *goquery.Selection) string {
 	var temp string
 	if len(date.Text()) < 8 {

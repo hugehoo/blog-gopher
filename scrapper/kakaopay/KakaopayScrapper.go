@@ -4,17 +4,21 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Kakaopay struct {
+}
 
 var baseURL = "https://tech.kakaopay.com"
 var pageURL = baseURL + "/page/"
 
-func CallApi() []Post {
+func (k *Kakaopay) CallApi() []Post {
 
 	// 어케 totalPage 를 파악하지
 	// page 범위를 넘어가면 404 를 뱉는다.
@@ -27,7 +31,7 @@ func CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := getPages(page)
+			pages := k.GetPages(page)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
@@ -45,7 +49,7 @@ func CallApi() []Post {
 	return result
 }
 
-func getPages(page int) []Post {
+func (k *Kakaopay) GetPages(page int) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL + strconv.Itoa(page))

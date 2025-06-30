@@ -4,16 +4,20 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Socar struct {
+}
 
 const baseURL = "https://tech.socarcorp.kr"
 
-func CallApi() []Post {
+func (s *Socar) CallApi() []Post {
 	var result []Post
 	var wg sync.WaitGroup
 	resultChan := make(chan []Post)
@@ -23,7 +27,7 @@ func CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := getPages(i)
+			pages := s.GetPages(i)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
@@ -41,7 +45,7 @@ func CallApi() []Post {
 	return result
 }
 
-func getPages(page int) []Post {
+func (s *Socar) GetPages(page int) []Post {
 	var posts []Post
 	var url string
 	if page == 1 {

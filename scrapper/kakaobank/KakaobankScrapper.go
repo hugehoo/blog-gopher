@@ -5,7 +5,6 @@ import (
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -13,13 +12,18 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Kakaobank struct {
+}
 
 var baseURL = "https://tech.kakaobank.com"
 var pageURL = baseURL + "/page/"
 var parsedURL, _ = url.Parse(baseURL)
 
-func CallApi() []Post {
+func (k *Kakaobank) CallApi() []Post {
 	var result []Post
 	resultChan := make(chan []Post)
 	var wg sync.WaitGroup
@@ -29,7 +33,7 @@ func CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := getPages(i)
+			pages := k.GetPages(i)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
@@ -47,7 +51,7 @@ func CallApi() []Post {
 	return result
 }
 
-func getPages(page int) []Post {
+func (k *Kakaobank) GetPages(page int) []Post {
 	var posts []Post
 	var url string
 	if page == 1 {

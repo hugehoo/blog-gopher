@@ -5,30 +5,33 @@ import (
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type BankSalad struct {
+}
 
 var baseURL = "https://blog.banksalad.com"
 var pageURL = baseURL + "/tech/page/"
 
-func CallApi() []Post {
-
+func (b *BankSalad) CallApi() []Post {
 	var result []Post
 
 	// single-page blog
 	for i := 1; i < 4; i++ {
-		pages := getPages(i)
+		pages := b.GetPages(i)
 		result = append(result, pages...)
 	}
 	return result
 }
 
-func getPages(page int) []Post {
+func (b *BankSalad) GetPages(page int) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL + strconv.Itoa(page))
@@ -55,11 +58,15 @@ func getPages(page int) []Post {
 		// 현재 날짜에 따른 연도 계산
 		calculatedYear := calculateYear(prevDay, prevMonth, prevYear, day, month)
 		log.Printf("Post Date: %d %s %d", day, month.String(), calculatedYear)
+		
+		// Create a proper time.Time from the parsed components
+		parsedDate := time.Date(calculatedYear, month, day, 0, 0, 0, 0, time.UTC)
+		
 		post := Post{
 			Title:   title.Text(),
 			Url:     baseURL + href,
 			Summary: summary.Text(),
-			Date:    date.Text(),
+			Date:    parsedDate,
 			Corp:    company.BANKSALAD}
 		posts = append(posts, post)
 	})

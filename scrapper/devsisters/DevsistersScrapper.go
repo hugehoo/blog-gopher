@@ -11,6 +11,9 @@ import (
 	"time"
 )
 
+type Devsisters struct {
+}
+
 const baseURL = "https://tech.devsisters.com"
 
 // 정리 필요 : 기존 goquery 방식으로 안됨. application/json 형태로 리턴받는 페이지라 그런듯.
@@ -18,12 +21,12 @@ const baseURL = "https://tech.devsisters.com"
 // 첨엔 고루틴에서 상태 공유가 이상하게 되는바람에 모든 값이 똑같이 나오는줄 알앗는데 그건 아녔다.
 // 모든 페이지네이션 유알엘이 결국 동일하게 처리되고 있는 이유는 결국 모르겠는데;;
 // 기존 페이지네이션 유알엘은 html 을 반환하지 않았기에 내가 처리할 고쿼리 html 태그가 없었다.
-func CallApi() []Post {
-	return getJsonPage(0)
+func (d *Devsisters) CallApi() []Post {
+	return d.GetPages(0)
 }
 
-func getJsonPage(i int) []Post {
-	requestUrl := baseURL + "/page-data/index/page-data.json?page=" + strconv.Itoa(i)
+func (d *Devsisters) GetPages(page int) []Post {
+	requestUrl := baseURL + "/page-data/index/page-data.json?page=" + strconv.Itoa(page)
 	res, err := http.Get(requestUrl)
 	defer res.Body.Close()
 

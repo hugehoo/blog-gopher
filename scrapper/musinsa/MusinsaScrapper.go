@@ -5,11 +5,15 @@ import (
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"blog-gopher/common/utils"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
+
+type Musinsa struct {
+}
 
 var urls = []string{
 	"https://medium.com/musinsa-tech/servers/home",
@@ -18,14 +22,14 @@ var urls = []string{
 	"https://medium.com/musinsa-tech/product/home",
 }
 
-func CallApi() []Post {
-	return utils.CallGoroutineApi(getPages, urls)
+func (m *Musinsa) CallApi() []Post {
+	return utils.CallGoroutineApi(m.getPages, urls)
 }
 
 /*
 * 당근 - 미디엄은 해당 연도에 발행된 글은 year 를 생략해서 표현함. 올해 이전에 발행된 글엔 year 를 붙인다.
  */
-func getPages(pageURL string) []Post {
+func (m *Musinsa) getPages(pageURL string) []Post {
 
 	var posts []Post
 	res, err := http.Get(pageURL)
@@ -49,6 +53,12 @@ func getPages(pageURL string) []Post {
 		}
 	})
 	return posts
+}
+
+func (m *Musinsa) GetPages(page int) []Post {
+	// Musinsa uses a different approach with multiple URLs, so we'll return empty for now
+	// The actual implementation uses getPages with specific URLs
+	return []Post{}
 }
 
 func processYear(date *goquery.Selection) string {
