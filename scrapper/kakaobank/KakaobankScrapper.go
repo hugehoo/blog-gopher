@@ -1,9 +1,6 @@
 package kakaobank
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,10 +10,18 @@ import (
 	"sync"
 	"time"
 
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Kakaobank struct {
+}
+
+func NewKakaobank() *Kakaobank {
+	return &Kakaobank{}
 }
 
 var baseURL = "https://tech.kakaobank.com"

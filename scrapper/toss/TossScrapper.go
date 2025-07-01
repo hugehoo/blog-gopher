@@ -1,17 +1,22 @@
 package toss
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"net/http"
 	"strings"
 	"time"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Toss struct {
+}
+
+func NewToss() *Toss {
+	return &Toss{}
 }
 
 var baseURL = "https://toss.tech/tech"

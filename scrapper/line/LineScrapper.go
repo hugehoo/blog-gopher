@@ -1,17 +1,22 @@
 package line
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 )
 
 type Line struct {
+}
+
+func NewLine() *Line {
+	return &Line{}
 }
 
 func (l *Line) CallApi() []Post {

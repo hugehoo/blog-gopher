@@ -1,6 +1,17 @@
 package service
 
 import (
+	"context"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/gin-gonic/gin"
+
 	"blog-gopher/common/dto"
 	. "blog-gopher/common/types"
 	"blog-gopher/repository"
@@ -18,15 +29,6 @@ import (
 	"blog-gopher/scrapper/socar"
 	"blog-gopher/scrapper/toss"
 	"blog-gopher/scrapper/twonine"
-	"context"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 type Service struct {
@@ -191,20 +193,20 @@ func (s *Service) UpdatePost(postID string, text string) {
 
 func CallGoroutineChannel() []Post {
 	scrapers := []func() []Post{
-		naverpay.CallApi,
-		socar.CallApi,
-		kakaopay.CallApi,
-		kakaobank.CallApi,
-		oliveyoung.CallApi,
-		daangn.CallApi,
-		toss.CallApi,
-		musinsa.CallApi,
-		twonine.CallApi,
-		buzzvil.CallApi,
-		kurly.CallApi,
-		devsisters.CallApi,
-		bucketplace.CallApi,
-		line.CallApi,
+		bucketplace.NewBucketplace().CallApi,
+		line.NewLine().CallApi,
+		naverpay.NewNaverpay().CallApi,
+		socar.NewSocar().CallApi,
+		kakaopay.NewKakaopay().CallApi,
+		kakaobank.NewKakaobank().CallApi,
+		oliveyoung.NewOliveyoung().CallApi,
+		daangn.NewDaangn().CallApi,
+		toss.NewToss().CallApi,
+		musinsa.NewMusinsa().CallApi,
+		twonine.NewTwonine().CallApi,
+		buzzvil.NewBuzzvil().CallApi,
+		kurly.NewKurly().CallApi,
+		devsisters.NewDevsisters().CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 

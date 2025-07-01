@@ -1,18 +1,23 @@
 package kakaopay
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Kakaopay struct {
+}
+
+func NewKakaopay() *Kakaopay {
+	return &Kakaopay{}
 }
 
 var baseURL = "https://tech.kakaopay.com"

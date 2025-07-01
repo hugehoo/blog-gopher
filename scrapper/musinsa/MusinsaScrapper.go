@@ -1,18 +1,23 @@
 package musinsa
 
 import (
+	"net/http"
+	"strconv"
+	"time"
+
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"blog-gopher/common/utils"
-	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Musinsa struct {
+}
+
+func NewMusinsa() *Musinsa {
+	return &Musinsa{}
 }
 
 var urls = []string{

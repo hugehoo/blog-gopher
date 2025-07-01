@@ -1,18 +1,23 @@
 package naverpay
 
 import (
+	"net/http"
+	"strconv"
+	"time"
+
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
 	"blog-gopher/common/utils"
-	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Naverpay struct {
+}
+
+func NewNaverpay() *Naverpay {
+	return &Naverpay{}
 }
 
 var urls = []string{

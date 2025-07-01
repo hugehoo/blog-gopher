@@ -1,9 +1,6 @@
 package banksalad
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,10 +8,18 @@ import (
 	"strings"
 	"time"
 
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 type BankSalad struct {
+}
+
+func NewBankSalad() BankSalad {
+	return BankSalad{}
 }
 
 var baseURL = "https://blog.banksalad.com"
@@ -58,10 +63,10 @@ func (b *BankSalad) GetPages(page int) []Post {
 		// 현재 날짜에 따른 연도 계산
 		calculatedYear := calculateYear(prevDay, prevMonth, prevYear, day, month)
 		log.Printf("Post Date: %d %s %d", day, month.String(), calculatedYear)
-		
+
 		// Create a proper time.Time from the parsed components
 		parsedDate := time.Date(calculatedYear, month, day, 0, 0, 0, 0, time.UTC)
-		
+
 		post := Post{
 			Title:   title.Text(),
 			Url:     baseURL + href,

@@ -1,17 +1,22 @@
 package devsisters
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 )
 
 type Devsisters struct {
+}
+
+func NewDevsisters() *Devsisters {
+	return &Devsisters{}
 }
 
 const baseURL = "https://tech.devsisters.com"

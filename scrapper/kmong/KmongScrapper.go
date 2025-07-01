@@ -1,19 +1,24 @@
 package kmong
 
 import (
-	. "blog-gopher/common/types"
-	"blog-gopher/common/utils"
 	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
+	. "blog-gopher/common/types"
+	"blog-gopher/common/utils"
+
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 )
 
 type Kmong struct {
+}
+
+func NewKmong() Kmong {
+	return Kmong{}
 }
 
 var urls = []string{

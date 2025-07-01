@@ -1,18 +1,23 @@
 package socar
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Socar struct {
+}
+
+func NewSocar() *Socar {
+	return &Socar{}
 }
 
 const baseURL = "https://tech.socarcorp.kr"

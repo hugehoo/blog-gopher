@@ -1,17 +1,22 @@
 package bucketplace
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 )
 
 type Bucketplace struct {
+}
+
+func NewBucketplace() *Bucketplace {
+	return &Bucketplace{}
 }
 
 func (b *Bucketplace) CallApi() []Post {

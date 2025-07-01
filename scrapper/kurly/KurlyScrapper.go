@@ -1,17 +1,22 @@
 package kurly
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"net/http"
 	"strconv"
 	"time"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Kurly struct {
+}
+
+func NewKurly() *Kurly {
+	return &Kurly{}
 }
 
 var baseURL = "https://helloworld.kurly.com"

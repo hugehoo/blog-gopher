@@ -1,7 +1,6 @@
 package buzzvil
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,6 +15,10 @@ import (
 )
 
 type Buzzvil struct {
+}
+
+func NewBuzzvil() *Buzzvil {
+	return &Buzzvil{}
 }
 
 var baseURL = "https://tech.buzzvil.com"
@@ -61,18 +64,15 @@ func (b *Buzzvil) GetPages(page int) []Post {
 	if page > 1 {
 		res, err = http.Get(pageURL + strconv.Itoa(page))
 	} else {
-		fmt.Println("GET:", baseURL)
 		res, err = http.Get(baseURL) // err 를 뱉지않고 바로 panic 이 나버리네.
 		if err != nil {
 			log.Fatal(err)
 		} else {
 			log.Println("R:", res)
 		}
-		fmt.Println("END:", page)
 	}
 	CheckErr(err)  // 어떤 url 에서 터지는지 알아야함.
 	CheckCode(res) // 어떤 url 에서 터지는지 알아야함.
-	fmt.Println("After")
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)

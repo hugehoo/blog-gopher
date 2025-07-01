@@ -1,17 +1,22 @@
 package oliveyoung
 
 import (
-	company "blog-gopher/common/enum"
-	. "blog-gopher/common/response"
-	. "blog-gopher/common/types"
 	"net/http"
 	"strconv"
 	"time"
+
+	company "blog-gopher/common/enum"
+	. "blog-gopher/common/response"
+	. "blog-gopher/common/types"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Oliveyoung struct {
+}
+
+func NewOliveyoung() *Oliveyoung {
+	return &Oliveyoung{}
 }
 
 const baseURL = "https://oliveyoung.tech/blog"
