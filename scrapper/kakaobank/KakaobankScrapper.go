@@ -71,7 +71,7 @@ func (k *Kakaobank) GetPages(page int) []Post {
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	CheckErr(err)
-	doc.Find(".post").Each(func(i int, selection *goquery.Selection) {
+	doc.Find(".col-12>div").Each(func(i int, selection *goquery.Selection) {
 		title := selection.Find(".post-title").Text()
 		date := selection.Find(".post-meta").Find(".date")
 		summary := selection.Find(".post-summary")
