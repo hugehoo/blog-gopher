@@ -67,8 +67,6 @@ func (b *Buzzvil) GetPages(page int) []Post {
 		res, err = http.Get(baseURL) // err 를 뱉지않고 바로 panic 이 나버리네.
 		if err != nil {
 			log.Fatal(err)
-		} else {
-			log.Println("R:", res)
 		}
 	}
 	CheckErr(err)  // 어떤 url 에서 터지는지 알아야함.

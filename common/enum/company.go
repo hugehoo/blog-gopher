@@ -19,4 +19,5 @@ const (
 	LINE       Company = "LINE"
 	SOCAR      Company = "SOCAR"
 	KMONG      Company = "KMONG"
+	WOOWA      Company = "WOOWA"
 )
