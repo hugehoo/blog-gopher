@@ -29,6 +29,7 @@ import (
 	"blog-gopher/scrapper/socar"
 	"blog-gopher/scrapper/toss"
 	"blog-gopher/scrapper/twonine"
+	"blog-gopher/scrapper/woowa"
 )
 
 type Service struct {
@@ -108,7 +109,7 @@ func (s Service) UpdateAllPosts() {
 func (s Service) UpdateLatestPosts() {
 	result := CallGoroutineChannel()
 	savedLatestDate := s.repo.GetLatestPost()
-	//savedLatestDate := time.Date(2000, time.August, 7, 0, 0, 0, 0, time.UTC) // sample for force update
+	// savedLatestDate := time.Date(2000, time.August, 7, 0, 0, 0, 0, time.UTC) // sample for force update
 	var filterResult []Post
 	for _, res := range result {
 		if res.Date.After(savedLatestDate) {
@@ -207,6 +208,7 @@ func CallGoroutineChannel() []Post {
 		buzzvil.NewBuzzvil().CallApi,
 		kurly.NewKurly().CallApi,
 		devsisters.NewDevsisters().CallApi,
+		woowa.NewWoowa().CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 
