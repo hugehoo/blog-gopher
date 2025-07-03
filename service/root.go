@@ -29,6 +29,7 @@ import (
 	"blog-gopher/scrapper/socar"
 	"blog-gopher/scrapper/toss"
 	"blog-gopher/scrapper/twonine"
+	"blog-gopher/scrapper/uber"
 	"blog-gopher/scrapper/woowa"
 )
 
@@ -209,6 +210,7 @@ func CallGoroutineChannel() []Post {
 		kurly.NewKurly().CallApi,
 		devsisters.NewDevsisters().CallApi,
 		woowa.NewWoowa().CallApi,
+		uber.NewUber().CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 

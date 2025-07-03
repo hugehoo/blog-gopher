@@ -19,9 +19,8 @@ func NewToss() *Toss {
 	return &Toss{}
 }
 
-var baseURL = "https://toss.tech/tech"
 var postURL = "https://toss.tech"
-var pageURL = baseURL
+var pageURL = "https://toss.tech/tech"
 
 func (t *Toss) CallApi() []Post {
 	var result []Post

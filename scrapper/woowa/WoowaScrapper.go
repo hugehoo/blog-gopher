@@ -1,7 +1,6 @@
 package woowa
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -86,11 +85,8 @@ func (w *Woowa) GetPages(page int) []Post {
 	doc.Find(".post-item").Each(func(i int, selection *goquery.Selection) {
 
 		title := selection.Find(".post-title").Text()
-
 		href, _ := selection.Find("a").Attr("href")
-
 		summary := selection.Find(".post-excerpt").Text()
-
 		parsedDate := getDate(selection)
 
 		if title != "" && href != "" {
@@ -114,7 +110,6 @@ func getDate(selection *goquery.Selection) time.Time {
 	var parsedDate time.Time
 	dateStr := selection.Find(".post-author-date").Text()
 	dateStr = strings.TrimSpace(dateStr)
-	fmt.Printf("datestr: '%s'\n", dateStr)
 	if dateStr != "" {
 		parsedDate, _ = time.Parse("2006. 1. 2.", dateStr)
 	}
