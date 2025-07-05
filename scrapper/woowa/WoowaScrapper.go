@@ -1,7 +1,6 @@
 package woowa
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -100,8 +99,6 @@ func (w *Woowa) GetPages(page int) []Post {
 			posts = append(posts, post)
 		}
 	})
-
-	log.Printf("Woowa: Total posts found: %d", len(posts))
 
 	return posts
 }

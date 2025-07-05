@@ -142,7 +142,7 @@ func getDate(dateText string) time.Time {
 		parts := strings.Split(dateStr, " / ")
 		if len(parts) > 0 {
 			datePart := strings.TrimSpace(parts[0])
-			
+
 			// Check if date already contains year (format: "December 11, 2024")
 			if strings.Contains(datePart, ",") {
 				// Format: "December 11, 2024 / Global"
@@ -150,18 +150,17 @@ func getDate(dateText string) time.Time {
 					"January 2, 2006",
 					"Jan 2, 2006",
 				}
-				
+
 				for _, format := range formats {
 					if parsed, err := time.Parse(format, datePart); err == nil {
 						parsedDate = parsed
-						fmt.Printf("Uber: Parsed date with year '%s' as %v\n", dateText, parsedDate)
 						return parsedDate
 					}
 				}
 			} else {
 				// Format: "July 2 / Global" (no year, assume current year)
 				currentYear := time.Now().Year()
-				
+
 				// Try different formats
 				formats := []string{
 					"January 2 2006",
@@ -183,7 +182,6 @@ func getDate(dateText string) time.Time {
 								}
 							}
 							parsedDate = parsed
-							fmt.Printf("Uber: Parsed date without year '%s' as %v (year %d)\n", dateText, parsedDate, testYear)
 							return parsedDate
 						}
 					}
