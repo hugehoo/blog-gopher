@@ -129,13 +129,16 @@ func (s *Service) GetPostsByCorp(corp string) []dto.PostDTO {
 	return result
 }
 
-func (s *Service) SearchPosts(value string) []dto.PostDTO {
-	queryResult := s.repo.SearchBlogs(value)
+func (s *Service) SearchPosts(value string) ([]dto.PostDTO, error) {
+	queryResult, err := s.repo.SearchBlogs(value)
+	if err != nil {
+		return nil, err
+	}
 	var result = make([]dto.PostDTO, len(queryResult))
 	for idx, post := range queryResult {
 		result[idx] = dto.ConvertToDTO(post)
 	}
-	return result
+	return result, nil
 }
 
 func (s *Service) UpdatePostContent(posts []dto.PostDTO) {

@@ -1,18 +1,20 @@
 package repository
 
 import (
-	"blog-gopher/common/dto"
-	"blog-gopher/common/types"
-	"blog-gopher/config"
 	"context"
 	"fmt"
+	"log"
+	"sync"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"sync"
-	"time"
+
+	"blog-gopher/common/dto"
+	"blog-gopher/common/types"
+	"blog-gopher/config"
 )
 
 type Repository struct {
@@ -43,6 +45,19 @@ func NewRepository() (*Repository, error) {
 	_, err := collection.Indexes().CreateMany(context.TODO(), models)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create index: %w", err)
+	}
+
+	// Create text index for search functionality
+	textIndexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "title", Value: "text"},
+			{Key: "summary", Value: "text"},
+		},
+		Options: options.Index().SetDefaultLanguage("ko"),
+	}
+	_, err = collection.Indexes().CreateOne(context.TODO(), textIndexModel)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create text index: %w", err)
 	}
 
 	return &Repository{mongo: client, collection: collection},
@@ -99,7 +114,7 @@ func (r *Repository) DeleteAll() {
 
 }
 
-func (r *Repository) SearchBlogs(searchWord string) []types.Post {
+func (r *Repository) SearchBlogs(searchWord string) ([]types.Post, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.M{
 			"$text": bson.M{"$search": fmt.Sprintf("\"%s\"", searchWord)},
@@ -127,16 +142,16 @@ func (r *Repository) SearchBlogs(searchWord string) []types.Post {
 	}
 	cursor, err := r.collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("search aggregation failed: %w", err)
 	}
 	defer cursor.Close(context.TODO())
 
 	var results []types.Post
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to decode search results: %w", err)
 	}
 
-	return results
+	return results, nil
 }
 
 func (r *Repository) UpdatePost(postID string, text string) (interface{}, interface{}) {
