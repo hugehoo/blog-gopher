@@ -47,13 +47,15 @@ func NewRepository() (*Repository, error) {
 		return nil, fmt.Errorf("failed to create index: %w", err)
 	}
 
+	// Drop existing text index if it exists
+	_, _ = collection.Indexes().DropOne(context.TODO(), "title_text_content_text")
+	
 	// Create text index for search functionality
 	textIndexModel := mongo.IndexModel{
 		Keys: bson.D{
 			{Key: "title", Value: "text"},
 			{Key: "summary", Value: "text"},
 		},
-		Options: options.Index().SetDefaultLanguage("korean"),
 	}
 	_, err = collection.Indexes().CreateOne(context.TODO(), textIndexModel)
 	if err != nil {
@@ -126,9 +128,8 @@ func (r *Repository) SearchBlogs(searchWord string) ([]types.Post, error) {
 		bson.D{{Key: "$match", Value: bson.M{
 			"score": bson.M{"$gte": 0.75},
 		}}},
-		// 정렬: 먼저 스코어로, 그 다음 날짜로
+		// 정렬: 날짜 내림차순으로 정렬
 		bson.D{{Key: "$sort", Value: bson.D{
-			{Key: "score", Value: -1},
 			{Key: "date", Value: -1},
 		}}},
 		// 결과 프로젝션
