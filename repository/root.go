@@ -53,7 +53,7 @@ func NewRepository() (*Repository, error) {
 			{Key: "title", Value: "text"},
 			{Key: "summary", Value: "text"},
 		},
-		Options: options.Index().SetDefaultLanguage("ko"),
+		Options: options.Index().SetDefaultLanguage("korean"),
 	}
 	_, err = collection.Indexes().CreateOne(context.TODO(), textIndexModel)
 	if err != nil {
