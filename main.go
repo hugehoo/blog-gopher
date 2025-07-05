@@ -1,25 +1,26 @@
 package main
 
 import (
-	"blog-gopher/common/dto"
-	"blog-gopher/repository"
-	"blog-gopher/service"
 	"context"
 	"fmt"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
-	"time"
+
+	"blog-gopher/common/dto"
+	"blog-gopher/repository"
+	"blog-gopher/service"
 )
 
 var ginLambda *ginadapter.GinLambda
 
 func main() {
-	log.Println("📌 Start Lambda")
 	lambda.Start(Handler)
 	//localHandler()
 }
@@ -37,10 +38,10 @@ func init() {
 	getPing(r)
 
 	var s *service.Service
-	if repository, err := repository.NewRepository(); err != nil {
+	if repo, err := repository.NewRepository(); err != nil {
 		panic(err)
 	} else {
-		s = service.NewService(repository)
+		s = service.NewService(repo)
 	}
 
 	cacheService := service.NewCacheService()
@@ -49,7 +50,7 @@ func init() {
 
 	getAllPosts(r, cacheService, s)
 	getPostsByCorp(r, cacheService, s)
-	searchPosts(r, s)
+	searchPosts(r, cacheService, s)
 
 	r.GET("/search/blog/:blogId", func(c *gin.Context) {
 		result := s.SearchPostsById(c.Param("blogId"))
@@ -65,19 +66,18 @@ func localHandler() {
 	r := gin.Default()
 	getPing(r)
 
-	var s *service.Service
-	if repository, err := repository.NewRepository(); err != nil {
+	mongo, err := repository.NewRepository()
+	if err != nil {
 		panic(err)
-	} else {
-		s = service.NewService(repository)
 	}
+	s := service.NewService(mongo)
 	cacheService := service.NewCacheService()
 
 	webConfigurations(r)
 
 	getAllPosts(r, cacheService, s)
 	getPostsByCorp(r, cacheService, s)
-	searchPosts(r, s)
+	searchPosts(r, cacheService, s)
 
 	r.GET("/auto-search", func(c *gin.Context) {
 		keyword := c.Query("keyword")
@@ -91,10 +91,12 @@ func localHandler() {
 	})
 
 	r.POST("/", func(c *gin.Context) {
+		deleteDefaultPostCache(cacheService)
 		s.UpdateAllPosts()
 	})
 
 	r.POST("/latest", func(c *gin.Context) {
+		deleteDefaultPostCache(cacheService)
 		s.UpdateLatestPosts()
 	})
 
@@ -111,6 +113,11 @@ func localHandler() {
 	})
 
 	r.Run()
+}
+
+func deleteDefaultPostCache(cacheService *service.CacheService) {
+	key := "posts"
+	cacheService.Delete(key)
 }
 
 func webConfigurations(r *gin.Engine) {
@@ -132,10 +139,34 @@ func getPing(r *gin.Engine) gin.IRoutes {
 	})
 }
 
-func searchPosts(r *gin.Engine, s *service.Service) gin.IRoutes {
+func searchPosts(r *gin.Engine, cacheService *service.CacheService, s *service.Service) gin.IRoutes {
 	return r.GET("/search", func(c *gin.Context) {
 		value := c.Query("keyword")
-		result := s.SearchPosts(value)
+		if value == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "keyword is required"})
+			return
+		}
+
+		// Create cache key for search
+		cacheKey := fmt.Sprintf("search:%s", value)
+
+		// Check cache first
+		if cached, found := cacheService.GetPosts(cacheKey); found {
+			log.Printf("Search cache hit for keyword: %s", value)
+			c.JSON(http.StatusOK, cached)
+			return
+		}
+
+		// If not in cache, perform search
+		result, err := s.SearchPosts(value)
+		if err != nil {
+			log.Printf("Search error: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "search failed"})
+			return
+		}
+
+		// Cache the results
+		cacheService.SetPosts(cacheKey, result)
 		c.JSON(http.StatusOK, result)
 	})
 }
