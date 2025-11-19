@@ -1,7 +1,6 @@
 package uber
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,7 +34,6 @@ func (u *Uber) CallApi() []Post {
 		go func(page int) {
 			defer wg.Done()
 			pages := u.GetPages(page)
-			fmt.Printf("page: %d %d \n", page, len(pages))
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
