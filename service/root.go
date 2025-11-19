@@ -110,11 +110,12 @@ func (s Service) UpdateAllPosts() {
 func (s Service) UpdateLatestPosts() {
 	result := CallGoroutineChannel()
 	savedLatestDate := s.repo.GetLatestPost()
-	// savedLatestDate := time.Date(2000, time.August, 7, 0, 0, 0, 0, time.UTC) // sample for force update
+	//savedLatestDate := time.Date(2025, time.October, 22, 0, 0, 0, 0, time.UTC) // sample for force update
 	var filterResult []Post
 	for _, res := range result {
 		if res.Date.After(savedLatestDate) {
 			filterResult = append(filterResult, res)
+			log.Println(res.Corp, res.Title)
 		}
 	}
 	s.repo.InsertBlogs(filterResult)
