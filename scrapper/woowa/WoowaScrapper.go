@@ -82,7 +82,6 @@ func (w *Woowa) GetPages(page int) []Post {
 	CheckErr(err)
 
 	doc.Find(".post-item").Each(func(i int, selection *goquery.Selection) {
-
 		title := selection.Find(".post-title").Text()
 		href, _ := selection.Find("a").Attr("href")
 		summary := selection.Find(".post-excerpt").Text()
@@ -107,8 +106,15 @@ func getDate(selection *goquery.Selection) time.Time {
 	var parsedDate time.Time
 	dateStr := selection.Find(".post-author-date").Text()
 	dateStr = strings.TrimSpace(dateStr)
-	if dateStr != "" {
-		parsedDate, _ = time.Parse("2006. 1. 2.", dateStr)
+
+	if dateStr != "" && !strings.Contains(dateStr, "{{") {
+		var err error
+		parsedDate, err = time.Parse("Jan.02.2006", dateStr)
+		if err != nil {
+			parsedDate = time.Now()
+		}
+	} else {
+		parsedDate = time.Now()
 	}
 
 	return parsedDate
