@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -107,18 +108,30 @@ func (s Service) UpdateAllPosts() {
 	s.repo.InsertBlogs(result)
 }
 
-func (s Service) UpdateLatestPosts() {
-	result := CallGoroutineChannel()
+func (s Service) UpdateLatestPosts() error {
+	log.Println("🔄 Starting UpdateLatestPosts operation")
+
+	result, err := CallGoroutineChannelWithErrorHandling()
+	if err != nil {
+		log.Printf("❌ Error in CallGoroutineChannelWithErrorHandling: %v", err)
+		return err
+	}
+
 	savedLatestDate := s.repo.GetLatestPost()
+	log.Printf("📅 Latest saved date: %v", savedLatestDate)
 	//savedLatestDate := time.Date(2025, time.October, 22, 0, 0, 0, 0, time.UTC) // sample for force update
 	var filterResult []Post
 	for _, res := range result {
 		if res.Date.After(savedLatestDate) {
 			filterResult = append(filterResult, res)
-			log.Println(res.Corp, res.Title)
+			log.Printf("📝 New post found - Corp: %s, Title: %s", res.Corp, res.Title)
 		}
 	}
+
+	log.Printf("📊 Found %d new posts to insert", len(filterResult))
 	s.repo.InsertBlogs(filterResult)
+	log.Println("✅ UpdateLatestPosts completed successfully")
+	return nil
 }
 
 func (s *Service) GetPostsByCorp(corp string) []dto.PostDTO {
@@ -167,10 +180,15 @@ func (s *Service) UpdatePostContent(posts []dto.PostDTO) {
 
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
-				log.Printf("Error fetching URL for post %s: %v \n %v", post.Id, post.Url, err)
+				log.Printf("❌ Error fetching URL for post %s: %v \n %v", post.Id, post.Url, err)
 				return
 			}
 			defer resp.Body.Close()
+
+			if resp.StatusCode != 200 {
+				log.Printf("❌ HTTP %d error for post %s URL: %s", resp.StatusCode, post.Id, post.Url)
+				return
+			}
 
 			doc, err := goquery.NewDocumentFromReader(resp.Body)
 			if err != nil {
@@ -238,6 +256,92 @@ func CallGoroutineChannel() []Post {
 	}
 
 	return result
+}
+
+func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
+	scrapers := []struct {
+		name string
+		fn   func() []Post
+	}{
+		{"bucketplace", bucketplace.NewBucketplace().CallApi},
+		{"line", line.NewLine().CallApi},
+		{"socar", socar.NewSocar().CallApi},
+		{"kakaopay", kakaopay.NewKakaopay().CallApi},
+		{"kakaobank", kakaobank.NewKakaobank().CallApi},
+		{"oliveyoung", oliveyoung.NewOliveyoung().CallApi},
+		{"toss", toss.NewToss().CallApi},
+		//{"daangn", daangn.NewDaangn().CallApi},
+		//{"naverpay", naverpay.NewNaverpay().CallApi},
+		//{"musinsa", musinsa.NewMusinsa().CallApi},
+		//{"twonine", twonine.NewTwonine().CallApi},
+		{"buzzvil", buzzvil.NewBuzzvil().CallApi},
+		{"kurly", kurly.NewKurly().CallApi},
+		{"devsisters", devsisters.NewDevsisters().CallApi},
+		{"woowa", woowa.NewWoowa().CallApi},
+		{"uber", uber.NewUber().CallApi},
+	}
+
+	type scraperResult struct {
+		posts []Post
+		err   error
+		name  string
+	}
+
+	resultChan := make(chan scraperResult, len(scrapers))
+	var wg sync.WaitGroup
+	var forbiddenErrors []string
+
+	for _, scraper := range scrapers {
+		wg.Add(1)
+		go func(name string, scrapingFunc func() []Post) {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("🚨 Panic in scraper %s: %v", name, r)
+					resultChan <- scraperResult{posts: []Post{}, err: fmt.Errorf("panic in %s: %v", name, r), name: name}
+				}
+			}()
+
+			log.Printf("🔍 Starting scraper: %s", name)
+			posts := scrapingFunc()
+			log.Printf("✅ Scraper %s completed successfully, found %d posts", name, len(posts))
+			resultChan <- scraperResult{posts: posts, err: nil, name: name}
+		}(scraper.name, scraper.fn)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	var result []Post
+	var hasErrors bool
+
+	for scraperRes := range resultChan {
+		if scraperRes.err != nil {
+			hasErrors = true
+			if strings.Contains(scraperRes.err.Error(), "403") || strings.Contains(scraperRes.err.Error(), "Forbidden") {
+				forbiddenErr := fmt.Sprintf("403 Forbidden error in %s scraper", scraperRes.name)
+				forbiddenErrors = append(forbiddenErrors, forbiddenErr)
+				log.Printf("🚫 %s", forbiddenErr)
+			} else {
+				log.Printf("❌ Error in scraper %s: %v", scraperRes.name, scraperRes.err)
+			}
+		} else {
+			result = append(result, scraperRes.posts...)
+		}
+	}
+
+	if len(forbiddenErrors) > 0 {
+		log.Printf("🚫 Summary: %d scrapers encountered 403 Forbidden errors: %v", len(forbiddenErrors), forbiddenErrors)
+	}
+
+	log.Printf("📊 Total posts collected: %d from %d scrapers", len(result), len(scrapers))
+	if hasErrors {
+		log.Printf("⚠️  Some scrapers encountered errors, but continuing with available data")
+	}
+
+	return result, nil
 }
 
 func (s *Service) UpdateDate() {
