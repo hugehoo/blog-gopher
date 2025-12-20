@@ -56,8 +56,12 @@ func (b *Bucketplace) GetPages(page int) []Post {
 		url = "https://www.bucketplace.com/page-data/culture/Tech/" + strconv.Itoa(page) + "/page-data.json"
 	}
 	res, err := http.Get(url)
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	var response Response

@@ -41,12 +41,18 @@ func (b *BankSalad) GetPages(page int) []Post {
 	var posts []Post
 	res, err := http.Get(pageURL + strconv.Itoa(page))
 
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 
 	year := time.Now().Year()
 	prevDay := 0
@@ -59,7 +65,9 @@ func (b *BankSalad) GetPages(page int) []Post {
 		date := selection.Find(".postCardMinimalstyle__PostDate-sc-12sv3cr-3")
 		day, month, err := parseDate(date.Text())
 		log.Println("date:", day, month)
-		CheckErr(err)
+		if CheckErrNonFatal(err) != nil {
+			return posts
+		}
 		// 현재 날짜에 따른 연도 계산
 		calculatedYear := calculateYear(prevDay, prevMonth, prevYear, day, month)
 		log.Printf("Post Date: %d %s %d", day, month.String(), calculatedYear)

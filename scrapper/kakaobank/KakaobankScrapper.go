@@ -65,19 +65,40 @@ func (k *Kakaobank) GetPages(page int) []Post {
 		url = pageURL + strconv.Itoa(page)
 	}
 	res, err := http.Get(url)
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
-	doc.Find(".col-12>div").Each(func(i int, selection *goquery.Selection) {
-		title := selection.Find(".post-title").Text()
-		date := selection.Find(".post-meta").Find(".date")
-		summary := selection.Find(".post-summary")
-		href, _ := selection.Find(".post-title>a").Attr("href")
-		parsedDate, _ := time.Parse("2006-01-02", strings.TrimSpace(date.Text()))
-		post := Post{Title: strings.TrimSpace(title), Url: processUrl(href), Summary: summary.Text(), Date: parsedDate, Corp: company.KAKAOBANK}
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	doc.Find(".post").Each(func(i int, selection *goquery.Selection) {
+		title := selection.Find(".post-title a").Text()
+		dateStr := selection.Find(".date").Text()
+		summary := selection.Find(".post-summary").Text()
+		href, exists := selection.Find(".post-title a").Attr("href")
+		
+		if !exists || title == "" {
+			return
+		}
+		
+		parsedDate, err := time.Parse("2006-01-02", strings.TrimSpace(dateStr))
+		if err != nil {
+			parsedDate = time.Now()
+		}
+		
+		post := Post{
+			Title:   strings.TrimSpace(title),
+			Url:     processUrl(href),
+			Summary: strings.TrimSpace(summary),
+			Date:    parsedDate,
+			Corp:    company.KAKAOBANK,
+		}
 		posts = append(posts, post)
 	})
 	//return []Post{}

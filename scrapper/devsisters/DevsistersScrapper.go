@@ -33,12 +33,20 @@ func (d *Devsisters) CallApi() []Post {
 func (d *Devsisters) GetPages(page int) []Post {
 	requestUrl := baseURL + "/page-data/index/page-data.json?page=" + strconv.Itoa(page)
 	res, err := http.Get(requestUrl)
+	if CheckErrNonFatal(err) != nil {
+		return []Post{}
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return []Post{}
+	}
 	defer res.Body.Close()
 
 	//var jsonData map[string]interface{}
 	var response JSONResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return []Post{}
+	}
 	//err = json.Unmarshal([]byte(jsonData), &response)
 	var posts []Post
 	for _, res := range response.Result.Data.AllMarkdownRemark.Edges {

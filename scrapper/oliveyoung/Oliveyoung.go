@@ -40,12 +40,18 @@ func (o *Oliveyoung) GetPages(page int) []Post {
 		url = baseURL + "/page/" + strconv.Itoa(page)
 	}
 	res, err := http.Get(url)
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 	doc.Find(".PostList-module--item--95839>a").Each(func(i int, selection *goquery.Selection) {
 		href, _ := selection.Attr("href")
 		div := selection.Find(".PostList-module--content--de4e3")

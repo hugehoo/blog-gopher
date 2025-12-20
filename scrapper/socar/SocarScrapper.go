@@ -59,12 +59,18 @@ func (s *Socar) GetPages(page int) []Post {
 		url = baseURL + "/posts/page" + strconv.Itoa(page)
 	}
 	res, err := http.Get(url)
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 	doc.Find(".post-preview").Each(func(i int, selection *goquery.Selection) {
 		anchor := selection.Find("a")
 		href, _ := anchor.Attr("href")
@@ -81,7 +87,15 @@ func (s *Socar) GetPages(page int) []Post {
 
 func getContent(href string) string {
 	res, err := http.Get(baseURL + href)
-	CheckErr(err)
-	doc, _ := goquery.NewDocumentFromReader(res.Body)
+	if CheckErrNonFatal(err) != nil {
+		return ""
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return ""
+	}
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if CheckErrNonFatal(err) != nil {
+		return ""
+	}
 	return doc.Find(".post-content").Text()
 }

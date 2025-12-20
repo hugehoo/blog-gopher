@@ -59,12 +59,18 @@ func (k *Kakaopay) GetPages(page int) []Post {
 	var posts []Post
 	res, err := http.Get(pageURL + strconv.Itoa(page))
 
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 	doc.Find("._postListItem_1cl5f_66>a").Each(func(i int, selection *goquery.Selection) {
 
 		title := selection.Find("._postInfo_1cl5f_99>strong")

@@ -65,7 +65,9 @@ func (u *Uber) GetPages(page int) []Post {
 	} else {
 		req, err = http.NewRequest("GET", baseURL, nil)
 	}
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
@@ -74,12 +76,18 @@ func (u *Uber) GetPages(page int) []Post {
 	req.Header.Set("Upgrade-Insecure-Requests", "1")
 
 	res, err = client.Do(req)
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 
 	//log.Printf("Uber: Starting to parse HTML for page %d", page)
 

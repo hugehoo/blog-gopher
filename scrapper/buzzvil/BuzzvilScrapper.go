@@ -1,7 +1,6 @@
 package buzzvil
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -65,16 +64,22 @@ func (b *Buzzvil) GetPages(page int) []Post {
 		res, err = http.Get(pageURL + strconv.Itoa(page))
 	} else {
 		res, err = http.Get(baseURL) // err 를 뱉지않고 바로 panic 이 나버리네.
-		if err != nil {
-			log.Fatal(err)
+		if CheckErrNonFatal(err) != nil {
+			return posts
 		}
 	}
-	CheckErr(err)  // 어떤 url 에서 터지는지 알아야함.
-	CheckCode(res) // 어떤 url 에서 터지는지 알아야함.
+	if CheckErrNonFatal(err) != nil {  // 어떤 url 에서 터지는지 알아야함.
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil { // 어떤 url 에서 터지는지 알아야함.
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 	doc.Find("article").Each(func(i int, selection *goquery.Selection) {
 		// 제목 텍스트 추출
 		title := selection.Find("a.post-title")

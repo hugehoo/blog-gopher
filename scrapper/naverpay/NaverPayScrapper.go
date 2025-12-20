@@ -34,12 +34,18 @@ func (n *Naverpay) getPages(pageURL string) []Post {
 	var posts []Post
 	res, err := http.Get(pageURL)
 
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 	doc.Find(".u-paddingTop30").Each(func(i int, selection *goquery.Selection) {
 		find := selection.Find("a")
 		href, _ := find.Attr("href")

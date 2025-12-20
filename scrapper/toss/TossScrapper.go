@@ -35,12 +35,18 @@ func (t *Toss) GetPages(page int) []Post {
 	var posts []Post
 	res, err := http.Get(pageURL)
 
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	CheckErr(err)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
 	
 	doc.Find(".css-132j2b5>li>a").Each(func(i int, selection *goquery.Selection) {
 		href, _ := selection.Attr("href")

@@ -61,7 +61,8 @@ func (k *Kmong) getPages(page string) []Post {
 		scrapePostsWithScroll(postChan),
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("❌ ChromeDP error encountered: %v", err)
+		return posts
 	}
 
 	close(postChan)
