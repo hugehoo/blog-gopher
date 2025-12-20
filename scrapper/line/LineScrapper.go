@@ -57,13 +57,17 @@ func (l *Line) GetPages(page int) []Post {
 		url = "https://techblog.lycorp.co.jp/page-data/ko/page/" + strconv.Itoa(page) + "/page-data.json"
 	}
 	res, err := http.Get(url)
-	CheckErr(err)
-	CheckCode(res)
+	if CheckErrNonFatal(err) != nil {
+		return posts
+	}
+	if CheckCodeNonFatal(res) != nil {
+		return posts
+	}
 	defer res.Body.Close()
 
 	var response Response
 	err = json.NewDecoder(res.Body).Decode(&response)
-	for _, data := range response.Result.Data.BlogsQuery.Edges {
+	for _, data := range response.Result.Data.LatestBlog.Edges {
 		parsedTime, _ := time.Parse(time.RFC3339Nano, data.Node.PubDate)
 		post := Post{
 			Title:   data.Node.Title,
@@ -79,7 +83,7 @@ func (l *Line) GetPages(page int) []Post {
 type Response struct {
 	Result struct {
 		Data struct {
-			BlogsQuery struct {
+			LatestBlog struct {
 				Edges []struct {
 					Node struct {
 						Slug    string `json:"slug"`
@@ -87,7 +91,7 @@ type Response struct {
 						PubDate string `json:"pubdate"`
 					} `json:"node"`
 				} `json:"edges"`
-			} `json:"BlogsQuery"`
+			} `json:"latestBlog"`
 		} `json:"data"`
 	} `json:"result"`
 }
