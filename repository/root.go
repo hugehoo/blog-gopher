@@ -84,9 +84,15 @@ func (r *Repository) InsertBlogs(posts []types.Post) {
 
 func (r *Repository) FindBlogs(corps []string, page int, pageSize int) []types.Post {
 
-	oneMonthAgo := time.Now().AddDate(0, -1, -10)
-	filter := bson.M{
-		"date": bson.M{"$gte": oneMonthAgo},
+	// 날짜 필터 제거 - 모든 데이터 반환
+	filter := bson.M{}
+
+	// 총 데이터 개수 확인
+	totalCount, err := r.collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		log.Printf("Error counting documents: %v", err)
+	} else {
+		log.Printf("Total documents in DB: %d, requesting page %d with pageSize %d", totalCount, page, pageSize)
 	}
 
 	if page < 1 {
@@ -265,6 +271,52 @@ func (r *Repository) SearchBlogsByCrop(corp string) []types.Post {
 	results := make([]types.Post, pageSize)
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		log.Fatal(err)
+	}
+
+	return results
+}
+
+func (r *Repository) SearchBlogsByCropWithPagination(corp string, page int, limit int) []types.Post {
+	if page < 1 {
+		page = 1
+	}
+	skip := (page - 1) * limit
+
+	// 필터 조건 생성
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"corp": corp,
+		}}},
+
+		// 정렬: 날짜 내림차순
+		bson.D{{Key: "$sort", Value: bson.D{
+			{Key: "date", Value: -1},
+		}}},
+
+		{{"$skip", skip}},
+		{{"$limit", limit}},
+
+		// 결과 프로젝션
+		bson.D{{Key: "$project", Value: bson.M{
+			"title":   1,
+			"date":    1,
+			"url":     1,
+			"corp":    1,
+			"summary": 1,
+		}}},
+	}
+	
+	cursor, err := r.collection.Aggregate(context.TODO(), pipeline)
+	if err != nil {
+		log.Printf("Error in SearchBlogsByCropWithPagination: %v", err)
+		return []types.Post{}
+	}
+	defer cursor.Close(context.TODO())
+
+	var results []types.Post
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Printf("Error decoding results: %v", err)
+		return []types.Post{}
 	}
 
 	return results

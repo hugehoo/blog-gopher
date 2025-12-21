@@ -50,21 +50,21 @@ func (s *Service) GetPosts(c *gin.Context) []dto.PostDTO {
 	start := time.Now()
 
 	pageStr := c.Query("page")
-	pageSizeStr := c.Query("pageSize")
+	limitStr := c.Query("limit")
 
-	// 기본 값 설정
+	// 기본 값 설정 (frontend와 일치)
 	page := 1
-	pageSize := 40
+	limit := 20
 
-	// 쿼리 파라미터에서 페이지 번호와 페이지 크기를 정수로 변환
+	// 쿼리 파라미터에서 페이지 번호와 limit을 정수로 변환
 	if pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil {
 			page = p
 		}
 	}
-	if pageSizeStr != "" {
-		if ps, err := strconv.Atoi(pageSizeStr); err == nil {
-			pageSize = ps
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil {
+			limit = l
 		}
 	}
 
@@ -79,7 +79,7 @@ func (s *Service) GetPosts(c *gin.Context) []dto.PostDTO {
 	} else {
 		splits = []string{}
 	}
-	blogs := s.repo.FindBlogs(splits, page, pageSize)
+	blogs := s.repo.FindBlogs(splits, page, limit)
 	response := make([]dto.PostDTO, len(blogs))
 	for idx, result := range blogs {
 		response[idx] = dto.ConvertToDTO(result)
@@ -134,8 +134,28 @@ func (s Service) UpdateLatestPosts() error {
 	return nil
 }
 
-func (s *Service) GetPostsByCorp(corp string) []dto.PostDTO {
-	queryResult := s.repo.SearchBlogsByCrop(corp)
+func (s *Service) GetPostsByCorp(corp string, c *gin.Context) []dto.PostDTO {
+	// Get pagination parameters
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+	
+	// Default values (matching frontend)
+	page := 1
+	limit := 20
+	
+	// Parse query parameters
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil {
+			limit = l
+		}
+	}
+	
+	queryResult := s.repo.SearchBlogsByCropWithPagination(corp, page, limit)
 	var result = make([]dto.PostDTO, len(queryResult))
 	for idx, post := range queryResult {
 		result[idx] = dto.ConvertToDTO(post)
