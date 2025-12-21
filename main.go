@@ -96,8 +96,25 @@ func localHandler() {
 	})
 
 	r.POST("/latest", func(c *gin.Context) {
+		log.Println("🚀 Starting /latest endpoint request")
 		deleteDefaultPostCache(cacheService)
-		s.UpdateLatestPosts()
+
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("❌ Panic in /latest endpoint: %v", r)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			}
+		}()
+
+		err := s.UpdateLatestPosts()
+		if err != nil {
+			log.Printf("❌ Error in UpdateLatestPosts: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update latest posts"})
+			return
+		}
+
+		log.Println("✅ /latest endpoint completed successfully")
+		c.JSON(http.StatusOK, gin.H{"message": "Latest posts updated successfully"})
 	})
 
 	r.POST("/content", func(c *gin.Context) {
@@ -112,7 +129,10 @@ func localHandler() {
 		})
 	})
 
-	r.Run()
+	if err = r.Run(); err != nil {
+		log.Fatalf("Failed Running Server: %v", err)
+		return
+	}
 }
 
 func deleteDefaultPostCache(cacheService *service.CacheService) {
@@ -147,7 +167,6 @@ func searchPosts(r *gin.Engine, cacheService *service.CacheService, s *service.S
 			return
 		}
 
-		// Create cache key for search
 		cacheKey := fmt.Sprintf("search:%s", value)
 
 		// Check cache first
@@ -174,13 +193,16 @@ func searchPosts(r *gin.Engine, cacheService *service.CacheService, s *service.S
 func getPostsByCorp(r *gin.Engine, cacheService *service.CacheService, s *service.Service) gin.IRoutes {
 	return r.GET("/corps", func(c *gin.Context) {
 		value := c.Query("corp")
-		key := fmt.Sprintf("corps::%s", value)
+		page := c.DefaultQuery("page", "1")
+		limit := c.DefaultQuery("limit", "20")
+
+		key := fmt.Sprintf("corps::%s:page:%s:limit:%s", value, page, limit)
 		cache, exists := cacheService.GetPostsByCorp(key)
 		if exists {
 			log.Println("Hit the cache")
 			c.JSON(http.StatusOK, cache)
 		} else {
-			posts := s.GetPostsByCorp(value)
+			posts := s.GetPostsByCorp(value, c)
 			cacheService.SetPosts(key, posts)
 			c.JSON(http.StatusOK, posts)
 		}
@@ -189,12 +211,18 @@ func getPostsByCorp(r *gin.Engine, cacheService *service.CacheService, s *servic
 
 func getAllPosts(r *gin.Engine, cacheService *service.CacheService, s *service.Service) gin.IRoutes {
 	return r.GET("/posts", func(c *gin.Context) {
-		key := "posts"
-		cache, bool := cacheService.GetPosts(key)
-		if bool != false {
+		page := c.DefaultQuery("page", "1")
+		limit := c.DefaultQuery("limit", "20")
+
+		key := fmt.Sprintf("posts:page:%s:limit:%s", page, limit)
+		cache, exists := cacheService.GetPosts(key)
+		if exists {
+			log.Printf("Cache hit for key: %s", key)
 			c.JSON(http.StatusOK, cache)
 		} else {
+			log.Printf("Cache miss - fetching posts: page=%s, limit=%s", page, limit)
 			results := s.GetPosts(c)
+			log.Printf("Fetched %d posts from DB", len(results))
 			cacheService.SetPosts(key, results)
 			c.JSON(http.StatusOK, results)
 		}
