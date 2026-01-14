@@ -1,6 +1,7 @@
 package toss
 
 import (
+	"encoding/xml"
 	"net/http"
 	"strings"
 	"time"
@@ -8,8 +9,6 @@ import (
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
 	. "blog-gopher/common/types"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 type Toss struct {
@@ -19,21 +18,32 @@ func NewToss() *Toss {
 	return &Toss{}
 }
 
-var postURL = "https://toss.tech"
-var pageURL = "https://toss.tech/tech"
+var rssURL = "https://toss.tech/rss.xml"
 
-func (t *Toss) CallApi() []Post {
-	var result []Post
-
-	// single-page blog
-	pages := t.GetPages(1)
-	result = append(result, pages...)
-	return result
+// RSS represents the RSS feed structure
+type RSS struct {
+	XMLName xml.Name `xml:"rss"`
+	Channel Channel  `xml:"channel"`
 }
 
-func (t *Toss) GetPages(page int) []Post {
+type Channel struct {
+	Items []Item `xml:"item"`
+}
+
+type Item struct {
+	Title       string `xml:"title"`
+	Link        string `xml:"link"`
+	Description string `xml:"description"`
+	PubDate     string `xml:"pubDate"`
+}
+
+func (t *Toss) CallApi() []Post {
+	return t.GetPages(1)
+}
+
+func (t *Toss) GetPages(_ int) []Post {
 	var posts []Post
-	res, err := http.Get(pageURL)
+	res, err := http.Get(rssURL)
 
 	if CheckErrNonFatal(err) != nil {
 		return posts
@@ -43,37 +53,39 @@ func (t *Toss) GetPages(page int) []Post {
 	}
 	defer res.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if CheckErrNonFatal(err) != nil {
+	var rss RSS
+	decoder := xml.NewDecoder(res.Body)
+	if err := decoder.Decode(&rss); err != nil {
+		CheckErrNonFatal(err)
 		return posts
 	}
-	
-	doc.Find(".css-132j2b5>li>a").Each(func(i int, selection *goquery.Selection) {
-		href, _ := selection.Attr("href")
-		title := selection.Find(".css-3lbpmg, .css-26h49c").First()
-		summary := selection.Find(".css-1yz9oud, .css-17u72f3").First()
-		originalDateString := selection.Find(".css-c7jnj2").Text()
-		
-		if len(title.Text()) != 0 {
-			// "2025년 11월 14일 · 최진영" 또는 "2025년 5월 1일· 작성자" -> "2025년 11월 14일" 추출
-			dateOnly := strings.Split(originalDateString, "·")[0]
-			dateOnly = strings.TrimSpace(dateOnly)
-			
-			date, err := time.Parse("2006년 1월 2일", dateOnly)
-			if err != nil {
-				// 날짜 파싱 실패시 현재 시간 사용
-				date = time.Now()
-			}
-			post := Post{Title: title.Text(), Url: checkUrl(href), Summary: summary.Text(), Date: date, Corp: company.TOSS}
-			posts = append(posts, post)
-		}
-	})
-	return posts
-}
 
-func checkUrl(href string) string {
-	if strings.HasPrefix(href, "https://") {
-		return href
+	// Filter engineering category articles
+	for _, item := range rss.Channel.Items {
+		if item.Title == "" {
+			continue
+		}
+
+		// Only include engineering articles (URL contains /article/)
+		if !strings.Contains(item.Link, "/article/") {
+			continue
+		}
+
+		// Parse pubDate (RFC1123 format: Fri, 09 Jan 2026 04:43:00 GMT)
+		date, err := time.Parse(time.RFC1123, item.PubDate)
+		if err != nil {
+			date = time.Now()
+		}
+
+		post := Post{
+			Title:   item.Title,
+			Url:     item.Link,
+			Summary: item.Description,
+			Date:    date,
+			Corp:    company.TOSS,
+		}
+		posts = append(posts, post)
 	}
-	return postURL + href
+
+	return posts
 }
