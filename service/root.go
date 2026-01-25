@@ -138,11 +138,11 @@ func (s *Service) GetPostsByCorp(corp string, c *gin.Context) []dto.PostDTO {
 	// Get pagination parameters
 	pageStr := c.Query("page")
 	limitStr := c.Query("limit")
-	
+
 	// Default values (matching frontend)
 	page := 1
 	limit := 20
-	
+
 	// Parse query parameters
 	if pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil {
@@ -154,7 +154,7 @@ func (s *Service) GetPostsByCorp(corp string, c *gin.Context) []dto.PostDTO {
 			limit = l
 		}
 	}
-	
+
 	queryResult := s.repo.SearchBlogsByCropWithPagination(corp, page, limit)
 	var result = make([]dto.PostDTO, len(queryResult))
 	for idx, post := range queryResult {
@@ -323,8 +323,9 @@ func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
 			}()
 
 			log.Printf("🔍 Starting scraper: %s", name)
+			s := time.Now()
 			posts := scrapingFunc()
-			log.Printf("✅ Scraper %s completed successfully, found %d posts", name, len(posts))
+			log.Printf("✅ %s completed successfully, found %d posts [%sms]", name, len(posts), time.Since(s))
 			resultChan <- scraperResult{posts: posts, err: nil, name: name}
 		}(scraper.name, scraper.fn)
 	}
