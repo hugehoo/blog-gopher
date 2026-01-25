@@ -325,7 +325,7 @@ func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
 			log.Printf("🔍 Starting scraper: %s", name)
 			s := time.Now()
 			posts := scrapingFunc()
-			log.Printf("✅ %s completed successfully, found %d posts [%sms]", name, len(posts), time.Since(s))
+			log.Printf("✅ %s completed successfully, found %d posts [%s]", name, len(posts), time.Since(s))
 			resultChan <- scraperResult{posts: posts, err: nil, name: name}
 		}(scraper.name, scraper.fn)
 	}
