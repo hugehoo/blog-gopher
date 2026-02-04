@@ -119,7 +119,7 @@ func (s Service) UpdateLatestPosts() error {
 
 	savedLatestDate := s.repo.GetLatestPost()
 	log.Printf("📅 Latest saved date: %v", savedLatestDate)
-	//savedLatestDate := time.Date(2025, time.October, 22, 0, 0, 0, 0, time.UTC) // sample for force update
+	//savedLatestDate := time.Date(2025, time.July, 22, 0, 0, 0, 0, time.UTC) // sample for force update
 	var filterResult []Post
 	for _, res := range result {
 		if res.Date.After(savedLatestDate) {
@@ -283,22 +283,22 @@ func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
 		name string
 		fn   func() []Post
 	}{
-		{"bucketplace", bucketplace.NewBucketplace().CallApi},
-		{"line", line.NewLine().CallApi},
-		{"socar", socar.NewSocar().CallApi},
-		{"kakaopay", kakaopay.NewKakaopay().CallApi},
-		{"kakaobank", kakaobank.NewKakaobank().CallApi},
-		{"oliveyoung", oliveyoung.NewOliveyoung().CallApi},
-		{"toss", toss.NewToss().CallApi},
-		//{"daangn", daangn.NewDaangn().CallApi},
+		//{"bucketplace", bucketplace.NewBucketplace().CallApi},
+		//{"line", line.NewLine().CallApi},
+		//{"socar", socar.NewSocar().CallApi},
+		//{"kakaopay", kakaopay.NewKakaopay().CallApi},
+		//{"kakaobank", kakaobank.NewKakaobank().CallApi},
+		//{"oliveyoung", oliveyoung.NewOliveyoung().CallApi},
+		//{"toss", toss.NewToss().CallApi},
+		{"daangn", daangn.NewDaangn().CallApi},
 		//{"naverpay", naverpay.NewNaverpay().CallApi},
 		//{"musinsa", musinsa.NewMusinsa().CallApi},
 		//{"twonine", twonine.NewTwonine().CallApi},
-		{"buzzvil", buzzvil.NewBuzzvil().CallApi},
-		{"kurly", kurly.NewKurly().CallApi},
-		{"devsisters", devsisters.NewDevsisters().CallApi},
-		{"woowa", woowa.NewWoowa().CallApi},
-		{"uber", uber.NewUber().CallApi},
+		//{"buzzvil", buzzvil.NewBuzzvil().CallApi},
+		//{"kurly", kurly.NewKurly().CallApi},
+		//{"devsisters", devsisters.NewDevsisters().CallApi},
+		//{"woowa", woowa.NewWoowa().CallApi},
+		//{"uber", uber.NewUber().CallApi},
 	}
 
 	type scraperResult struct {

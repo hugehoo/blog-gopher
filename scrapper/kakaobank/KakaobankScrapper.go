@@ -38,7 +38,7 @@ func (k *Kakaobank) CallApi() []Post {
 		wg.Add(1)
 		go func(page int) {
 			defer wg.Done()
-			pages := k.GetPages(i)
+			pages := k.GetPages(page)
 			if len(pages) > 0 {
 				resultChan <- pages
 			}
