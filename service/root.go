@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,6 +17,7 @@ import (
 	"blog-gopher/common/dto"
 	. "blog-gopher/common/types"
 	"blog-gopher/repository"
+	"blog-gopher/scrapper/banksalad"
 	"blog-gopher/scrapper/bucketplace"
 	"blog-gopher/scrapper/buzzvil"
 	"blog-gopher/scrapper/daangn"
@@ -242,6 +244,7 @@ func CallGoroutineChannel() []Post {
 		buzzvil.NewBuzzvil().CallApi,
 		kurly.NewKurly().CallApi,
 		devsisters.NewDevsisters().CallApi,
+		banksalad.NewBankSalad().CallApi,
 		woowa.NewWoowa().CallApi,
 		uber.NewUber().CallApi,
 	}
@@ -265,6 +268,11 @@ func CallGoroutineChannel() []Post {
 	for posts := range resultChan {
 		result = append(result, posts...)
 	}
+
+	// Sort by date ascending (oldest first)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Date.Before(result[j].Date)
+	})
 
 	return result
 }
@@ -290,6 +298,7 @@ func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
 		{"devsisters", devsisters.NewDevsisters().CallApi},
 		{"woowa", woowa.NewWoowa().CallApi},
 		{"uber", uber.NewUber().CallApi},
+		{"banksalad", banksalad.NewBankSalad().CallApi},
 	}
 
 	type scraperResult struct {

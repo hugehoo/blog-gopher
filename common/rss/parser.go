@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	company "blog-gopher/common/enum"
 	. "blog-gopher/common/response"
@@ -98,17 +99,36 @@ func Parse(cfg Config) []Post {
 		}
 
 		post := Post{
-			Title:   strings.TrimSpace(item.Title),
+			Title:   sanitizeUTF8(strings.TrimSpace(item.Title)),
 			Url:     strings.TrimSpace(item.Link),
-			Summary: summary,
+			Summary: sanitizeUTF8(summary),
 			Date:    date,
-			Content: strings.TrimSpace(item.Content),
+			Content: sanitizeUTF8(strings.TrimSpace(item.Content)),
 			Corp:    cfg.Corp,
 		}
 		posts = append(posts, post)
 	}
 
 	return posts
+}
+
+// sanitizeUTF8 removes invalid UTF-8 characters from a string
+func sanitizeUTF8(s string) string {
+	if utf8.ValidString(s) {
+		return s
+	}
+	// Replace invalid UTF-8 sequences with empty string
+	v := make([]rune, 0, len(s))
+	for i, r := range s {
+		if r == utf8.RuneError {
+			_, size := utf8.DecodeRuneInString(s[i:])
+			if size == 1 {
+				continue // Skip invalid byte
+			}
+		}
+		v = append(v, r)
+	}
+	return string(v)
 }
 
 // extractSummary extracts plain text from HTML content and truncates to maxLen
