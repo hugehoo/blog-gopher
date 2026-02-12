@@ -94,15 +94,6 @@ func (s *Service) SearchPostsById(id string) Post {
 	return s.repo.SearchPostById(id)
 }
 
-func (s *Service) AutoSearchPosts(keyword string) []dto.PostDTO {
-	queryResult := s.repo.AutoSearchQuery(keyword)
-	var response []dto.PostDTO
-	for _, result := range queryResult {
-		response = append(response, dto.ConvertToDTO(result))
-	}
-	return response
-}
-
 func (s Service) UpdateAllPosts() {
 	result := CallGoroutineChannel()
 	s.repo.InsertBlogs(result)
@@ -283,22 +274,22 @@ func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
 		name string
 		fn   func() []Post
 	}{
-		//{"bucketplace", bucketplace.NewBucketplace().CallApi},
-		//{"line", line.NewLine().CallApi},
-		//{"socar", socar.NewSocar().CallApi},
-		//{"kakaopay", kakaopay.NewKakaopay().CallApi},
-		//{"kakaobank", kakaobank.NewKakaobank().CallApi},
-		//{"oliveyoung", oliveyoung.NewOliveyoung().CallApi},
-		//{"toss", toss.NewToss().CallApi},
+		{"bucketplace", bucketplace.NewBucketplace().CallApi},
+		{"line", line.NewLine().CallApi},
+		{"socar", socar.NewSocar().CallApi},
+		{"kakaopay", kakaopay.NewKakaopay().CallApi},
+		{"kakaobank", kakaobank.NewKakaobank().CallApi},
+		{"oliveyoung", oliveyoung.NewOliveyoung().CallApi},
+		{"toss", toss.NewToss().CallApi},
 		{"daangn", daangn.NewDaangn().CallApi},
-		//{"naverpay", naverpay.NewNaverpay().CallApi},
-		//{"musinsa", musinsa.NewMusinsa().CallApi},
-		//{"twonine", twonine.NewTwonine().CallApi},
-		//{"buzzvil", buzzvil.NewBuzzvil().CallApi},
-		//{"kurly", kurly.NewKurly().CallApi},
-		//{"devsisters", devsisters.NewDevsisters().CallApi},
-		//{"woowa", woowa.NewWoowa().CallApi},
-		//{"uber", uber.NewUber().CallApi},
+		{"naverpay", naverpay.NewNaverpay().CallApi},
+		{"musinsa", musinsa.NewMusinsa().CallApi},
+		{"twonine", twonine.NewTwonine().CallApi},
+		{"buzzvil", buzzvil.NewBuzzvil().CallApi},
+		{"kurly", kurly.NewKurly().CallApi},
+		{"devsisters", devsisters.NewDevsisters().CallApi},
+		{"woowa", woowa.NewWoowa().CallApi},
+		{"uber", uber.NewUber().CallApi},
 	}
 
 	type scraperResult struct {

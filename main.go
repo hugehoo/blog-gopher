@@ -79,12 +79,6 @@ func localHandler() {
 	getPostsByCorp(r, cacheService, s)
 	searchPosts(r, cacheService, s)
 
-	r.GET("/auto-search", func(c *gin.Context) {
-		keyword := c.Query("keyword")
-		response := s.AutoSearchPosts(keyword)
-		c.JSON(http.StatusOK, response)
-	})
-
 	r.GET("/search/blog/:blogId", func(c *gin.Context) {
 		result := s.SearchPostsById(c.Param("blogId"))
 		c.JSON(http.StatusOK, dto.ConvertToDTO(result))

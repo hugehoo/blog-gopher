@@ -127,13 +127,6 @@ func (r *Repository) SearchBlogs(searchWord string) ([]types.Post, error) {
 		bson.D{{Key: "$match", Value: bson.M{
 			"$text": bson.M{"$search": fmt.Sprintf("\"%s\"", searchWord)},
 		}}},
-		// 텍스트 검색 스코어 추가
-		bson.D{{Key: "$addFields", Value: bson.M{
-			"score": bson.M{"$meta": "textScore"},
-		}}},
-		bson.D{{Key: "$match", Value: bson.M{
-			"score": bson.M{"$gte": 0.75},
-		}}},
 		// 정렬: 날짜 내림차순으로 정렬
 		bson.D{{Key: "$sort", Value: bson.D{
 			{Key: "date", Value: -1},
@@ -188,45 +181,6 @@ func (r *Repository) GetLatestPost() time.Time {
 		log.Println("can't find latest post")
 	}
 	return result.Date
-}
-
-func (r *Repository) AutoSearchQuery(searchWord string) []types.Post {
-	//if len(searchWord) > 5 { // 이 코드를 사용하면 한글이 안먹힘, 예를 들어 카프카는 ㅋ,ㅏ,ㅍ,ㅡ,ㅋ,ㅏ 로 인식하는가봄.
-	//	searchWord = searchWord[:5]
-	//}
-	pipeline := mongo.Pipeline{
-		{{"$search", bson.D{
-			{"index", "title-auto-search"},
-			{"autocomplete", bson.D{
-				{"path", "title"},
-				{"query", fmt.Sprintf("\"%s\"", searchWord)},
-			}},
-		}}},
-		{{"$limit", 20}},
-		bson.D{{Key: "$project", Value: bson.M{
-			"title":   1,
-			"date":    1,
-			"url":     1,
-			"corp":    1,
-			"summary": 1,
-		}}},
-	}
-	log.Println(searchWord)
-	var results []types.Post
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cursor, err := r.collection.Aggregate(ctx, pipeline)
-	if err != nil {
-		log.Println("Here Error occurs", err) // 왜 자동완성 후보를 클릭만 하면 터지지? pipeline 을 통해 보내는 단어길이도 제한했는데;;
-		log.Println("pipeline", pipeline)
-		return results
-	}
-
-	if err = cursor.All(context.TODO(), &results); err != nil {
-		log.Fatal(err)
-	}
-	return results
 }
 
 func (r *Repository) SearchBlogsByCrop(corp string) []types.Post {

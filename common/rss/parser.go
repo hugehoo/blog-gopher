@@ -3,6 +3,7 @@ package rss
 import (
 	"encoding/xml"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -26,7 +27,7 @@ type Item struct {
 	Link        string `xml:"link"`
 	Description string `xml:"description"`
 	PubDate     string `xml:"pubDate"`
-	Content     string `xml:"encoded"`
+	Content     string `xml:"http://purl.org/rss/1.0/modules/content/ encoded"`
 }
 
 // DateFormat constants for common RSS date formats
@@ -87,10 +88,19 @@ func Parse(cfg Config) []Post {
 
 		date := parseDate(item.PubDate, cfg.DateFormat)
 
+		// Use description as summary, fallback to extracting from content
+		summary := strings.TrimSpace(item.Description)
+		if summary != "" {
+			// Clean HTML from description if present
+			summary = extractSummary(summary, 300)
+		} else if item.Content != "" {
+			summary = extractSummary(item.Content, 300)
+		}
+
 		post := Post{
 			Title:   strings.TrimSpace(item.Title),
 			Url:     strings.TrimSpace(item.Link),
-			Summary: strings.TrimSpace(item.Description),
+			Summary: summary,
 			Date:    date,
 			Content: strings.TrimSpace(item.Content),
 			Corp:    cfg.Corp,
@@ -99,6 +109,33 @@ func Parse(cfg Config) []Post {
 	}
 
 	return posts
+}
+
+// extractSummary extracts plain text from HTML content and truncates to maxLen
+func extractSummary(html string, maxLen int) string {
+	// Remove HTML tags
+	tagRegex := regexp.MustCompile(`<[^>]*>`)
+	text := tagRegex.ReplaceAllString(html, "")
+
+	// Decode common HTML entities
+	text = strings.ReplaceAll(text, "&nbsp;", " ")
+	text = strings.ReplaceAll(text, "&amp;", "&")
+	text = strings.ReplaceAll(text, "&lt;", "<")
+	text = strings.ReplaceAll(text, "&gt;", ">")
+	text = strings.ReplaceAll(text, "&quot;", "\"")
+	text = strings.ReplaceAll(text, "&#39;", "'")
+
+	// Normalize whitespace
+	spaceRegex := regexp.MustCompile(`\s+`)
+	text = spaceRegex.ReplaceAllString(text, " ")
+	text = strings.TrimSpace(text)
+
+	// Truncate to maxLen
+	if len(text) > maxLen {
+		text = text[:maxLen] + "..."
+	}
+
+	return text
 }
 
 // parseDate tries multiple date formats
