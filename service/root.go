@@ -30,6 +30,7 @@ import (
 	"blog-gopher/scrapper/naverpay"
 	"blog-gopher/scrapper/oliveyoung"
 	"blog-gopher/scrapper/socar"
+	"blog-gopher/scrapper/spotify"
 	"blog-gopher/scrapper/toss"
 	"blog-gopher/scrapper/twonine"
 	"blog-gopher/scrapper/uber"
@@ -247,6 +248,7 @@ func CallGoroutineChannel() []Post {
 		banksalad.NewBankSalad().CallApi,
 		woowa.NewWoowa().CallApi,
 		uber.NewUber().CallApi,
+		spotify.NewSpotify().CallApi,
 	}
 	resultChan := make(chan []Post, len(scrapers))
 
@@ -299,6 +301,7 @@ func CallGoroutineChannelWithErrorHandling() ([]Post, error) {
 		{"woowa", woowa.NewWoowa().CallApi},
 		{"uber", uber.NewUber().CallApi},
 		{"banksalad", banksalad.NewBankSalad().CallApi},
+		{"spotify", spotify.NewSpotify().CallApi},
 	}
 
 	type scraperResult struct {

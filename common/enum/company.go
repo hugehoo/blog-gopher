@@ -18,7 +18,7 @@ const (
 	OHOUSE     Company = "OHOUSE"
 	LINE       Company = "LINE"
 	SOCAR      Company = "SOCAR"
-	KMONG      Company = "KMONG"
 	WOOWA      Company = "WOOWA"
 	UBER       Company = "UBER"
+	SPOTIFY    Company = "SPOTIFY"
 )

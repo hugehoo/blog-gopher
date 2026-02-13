@@ -41,10 +41,11 @@ const (
 
 // Config holds RSS parser configuration
 type Config struct {
-	URL        string
-	Corp       company.Company
-	DateFormat string          // Optional: custom date format
-	Filter     func(Item) bool // Optional: filter function for items
+	URL         string
+	Corp        company.Company
+	DateFormat  string          // Optional: custom date format
+	Filter      func(Item) bool // Optional: filter function for items
+	Suppress404 bool            // Optional: suppress 404 log/noise for probe-style feeds
 }
 
 // Parse fetches and parses RSS feed, returning posts
@@ -65,8 +66,13 @@ func Parse(cfg Config) []Post {
 	if CheckErrNonFatal(err) != nil {
 		return posts
 	}
-	if CheckCodeNonFatal(res) != nil {
-		return posts
+	if res.StatusCode != http.StatusOK {
+		if cfg.Suppress404 && res.StatusCode == http.StatusNotFound {
+			return posts
+		}
+		if CheckCodeNonFatal(res) != nil {
+			return posts
+		}
 	}
 	defer res.Body.Close()
 
